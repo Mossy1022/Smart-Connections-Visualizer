@@ -54,9 +54,15 @@ class MyItemView extends ItemView {
 	labelSelection : any;
 	updatingVisualization: boolean; // Add this flag
 	isCtrlPressed = false;
+	isAltPressed = false;
     isDragging = false;
+	isChangingConnectionType = true;
     selectionBox: any;
 	validatedLinks : any;
+	
+	// selection box origin point
+	startX = 0;
+	startY = 0;
 
     constructor(leaf: WorkspaceLeaf) {
         super(leaf);
@@ -84,6 +90,7 @@ class MyItemView extends ItemView {
 				if (d.id === this.centralNode.id) {
 					return '#7c8594';
 				} else if (d.selected) {
+					console.log('selected appearance');
 					return '#f3ee5d';
 				} else if (d.highlighted) {
 					return '#d46ebe';
@@ -361,6 +368,8 @@ class MyItemView extends ItemView {
 				this.isDragging = true;
 				const [x, y] = d3.pointer(event);
 			
+				const transform = d3.zoomTransform(svg.node() as Element);
+			
 				this.selectionBox = svg.append('rect')
 					.attr('class', 'selection-box')
 					.attr('x', x)
@@ -371,41 +380,49 @@ class MyItemView extends ItemView {
 					.attr('stroke-width', 1)
 					.attr('fill', 'rgba(0, 0, 255, 0.3)'); // Semi-transparent fill
 			
-				// Track existing selected nodes
-				this.nodeSelection.each((d: any) => {
-					d.tempSelected = d.selected;
-				});
+				// Store the initial click point adjusted by zoom and pan
+				this.startX = x;
+				this.startY = y;
 			};
 			
 			const updateBoxSelection = (event: any) => {
 				if (!this.isDragging) return;
 			
 				const [x, y] = d3.pointer(event);
-				const startX = parseFloat(this.selectionBox.attr('x'));
-				const startY = parseFloat(this.selectionBox.attr('y'));
 			
-				const newWidth = x - startX;
-				const newHeight = y - startY;
+				const transform = d3.zoomTransform(svg.node() as Element);
+			
+				const newWidth = x - this.startX;
+				const newHeight = y - this.startY;
 			
 				this.selectionBox
 					.attr('width', Math.abs(newWidth))
 					.attr('height', Math.abs(newHeight))
-					.attr('x', newWidth < 0 ? x : startX)
-					.attr('y', newHeight < 0 ? y : startY);
+					.attr('x', Math.min(x, this.startX))
+					.attr('y', Math.min(y, this.startY));
 			
-				const endX = newWidth < 0 ? startX : startX + newWidth;
-				const endY = newHeight < 0 ? startY : startY + newHeight;
+				const endX = this.startX + newWidth;
+				const endY = this.startY + newHeight;
 			
-				const [startXSVG, startYSVG] = d3.pointer(event, svg.node());
-				const [endXSVG, endYSVG] = d3.pointer({ x: endX, y: endY }, svg.node());
+				// Ensure the coordinates account for drag direction
+				const transformedStartX = Math.min(this.startX, endX);
+				const transformedStartY = Math.min(this.startY, endY);
+				const transformedEndX = Math.max(this.startX, endX);
+				const transformedEndY = Math.max(this.startY, endY);
+			
+				// Adjust the coordinates for zoom and pan
+				const zoomedStartX = (transformedStartX - transform.x) / transform.k;
+				const zoomedStartY = (transformedStartY - transform.y) / transform.k;
+				const zoomedEndX = (transformedEndX - transform.x) / transform.k;
+				const zoomedEndY = (transformedEndY - transform.y) / transform.k;
 			
 				this.nodeSelection.each((d: any) => {
 					const nodeX = d.x;
 					const nodeY = d.y;
-					if (nodeX >= Math.min(startXSVG, endXSVG) && nodeX <= Math.max(startXSVG, endXSVG) && nodeY >= Math.min(startYSVG, endYSVG) && nodeY <= Math.max(startYSVG, endYSVG)) {
+					if (nodeX >= zoomedStartX && nodeX <= zoomedEndX && nodeY >= zoomedStartY && nodeY <= zoomedEndY) {
 						d.selected = true;
 					} else {
-						d.selected = d.tempSelected;
+						d.selected = false;
 					}
 				});
 			
@@ -417,29 +434,54 @@ class MyItemView extends ItemView {
 				this.isDragging = false;
 			
 				this.selectionBox.remove();
-			
-				// Clean up temporary selection state
-				this.nodeSelection.each((d: any) => {
-					delete d.tempSelected;
-				});
-			
-				this.updateNodeAppearance();
 			};
+			
 			
 			// Attach mouse event listeners to the SVG
 			svg.on('mousedown', (event: any) => {
-				if (!this.isCtrlPressed) {
+				if (!event.ctrlKey) {
 					this.clearSelections();
 				}
 				startBoxSelection(event);
 			}).on('mousemove', updateBoxSelection)
-			  .on('mouseup', endBoxSelection)
-			  .on('click', function(event) {
-				if (!event.defaultPrevented && !that.isCtrlPressed) {
+			.on('mouseup', endBoxSelection)
+			.on('click', function(event) {
+				if (!event.defaultPrevented && !event.ctrlKey) {
 					that.clearSelections();
 				}
 			});
+					
+
+			// Listen for Alt/Option key press for individual node selection
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Alt' || event.key === 'AltGraph') {
+					this.isAltPressed = true;
+				}
+			});
+
+			document.addEventListener('keyup', (event) => {
+				if (event.key === 'Alt' || event.key === 'AltGraph') {
+					this.isAltPressed = false;
+				}
+			});
+
+
+			// Listen for control key press
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Control') {
+					this.isCtrlPressed = true;
+					svg.style('cursor', 'crosshair');
+
+				}
+			});
 			
+			document.addEventListener('keyup', (event) => {
+				if (event.key === 'Control') {
+					this.isCtrlPressed = false;
+					svg.style('cursor', 'default');
+
+				}
+			});
 			
 	
 			const updateLabelOpacity = (zoomLevel: number) => {
@@ -627,7 +669,8 @@ class MyItemView extends ItemView {
 			// Function to rerender visualization with most up to date settings
 			const updateVisualization = (newScoreThreshold?: number) => {
 
-				if (this.updatingVisualization) {
+				// We dont want rapid calls if its already updating unless we are changing the network via connection type
+				if (this.updatingVisualization && !this.isChangingConnectionType) {
 					console.log('Update already in progress. Skipping...');
 					return;
 				} else {
@@ -635,7 +678,8 @@ class MyItemView extends ItemView {
 					console.log('Update not in progress . Skipping...');
 
 				}
-				console.log('updating');
+
+				this.isChangingConnectionType = false;
 
 				if (newScoreThreshold !== undefined) {
 					this.significanceScoreThreshold = newScoreThreshold;
@@ -714,39 +758,67 @@ class MyItemView extends ItemView {
 							.attr('stroke', d => d.selected ? '#ff0' : (d.group === 'note' ? '#7c8594' : '#926ec9'))
 							.attr('stroke-width', d => d.selected ? 2 : 0.3)
 							.attr('opacity', 1)
-							.attr('cursor', 'pointer')
+							.attr('cursor', 'grab')
 							.call(d3.drag()
-								.on('start', (event, d: any) => {
+								.on('start', function(event, d: any) {
 									if (!event.active) simulation.alphaTarget(0.3).restart();
-									d.fx = d.x;
-									d.fy = d.y;
+									// Store initial positions of selected nodes
+									d.initialX = d.x;
+									d.initialY = d.y;
+									if (d.selected) {
+										that.nodeSelection.each((node: any) => {
+											if (node.selected) {
+												node.initialX = node.x;
+												node.initialY = node.y;
+											}
+										});
+									}
 								})
-								.on('drag', (event, d: any) => {
-									d.fx = event.x;
-									d.fy = event.y;
+								.on('drag', function(event, d: any) {
+									const dx = event.x - d.initialX;
+									const dy = event.y - d.initialY;
+									if (d.selected) {
+										that.nodeSelection.each((node: any) => {
+											if (node.selected) {
+												node.fx = node.initialX + dx;
+												node.fy = node.initialY + dy;
+											}
+										});
+									} else {
+										d.fx = event.x;
+										d.fy = event.y;
+									}
 								})
-								.on('end', (event, d: any) => {
+								.on('end', function(event, d: any) {
 									if (!event.active) simulation.alphaTarget(0);
+									if (d.selected) {
+										that.nodeSelection.each((node: any) => {
+											if (node.selected) {
+												node.fx = null;
+												node.fy = null;
+											}
+										});
+									} else {
+										d.fx = null;
+										d.fy = null;
+									}
 								})
 							)
 							.on('click', function(event, d: any) {
-								console.log('select clicking');
-								if (!that.isCtrlPressed) {
-									console.log('select clear');
+								event.stopPropagation();
+								if (!that.isAltPressed) {
 									that.clearSelections();
 								} 
 								d.selected = !d.selected;
-								console.log('selecting: ', d.selected)
+								console.log('selected: ', d.selected)
 								that.updateNodeAppearance();
-								event.stopPropagation();
 							})
 							.on('mouseover', function(event, d: any) {
 								that.isHovering = true;
-
 								if (!d.selected) {
 									if (d.id !== that.centralNode.id && !d.highlighted) {
 										d3.select(this).transition().duration(500).attr('fill', '#d46ebe'); // Animate fill color to #d46ebe
-									}
+									} 
 									that.highlightNode(d);
 								}
 							
@@ -1069,6 +1141,7 @@ class MyItemView extends ItemView {
 					connectionTypeRadios.forEach(radio => {
 						radio.addEventListener('change', (event) => {
 							this.connectionType = (event.target as HTMLInputElement).value;
+							this.isChangingConnectionType = true;
 							updateVisualization();
 						});
 					});
@@ -1288,23 +1361,6 @@ class MyItemView extends ItemView {
 						resetToDefault();
 					});
 				}
-
-				// Listen for control key press
-				document.addEventListener('keydown', (event) => {
-					if (event.key === 'Control') {
-						this.isCtrlPressed = true;
-						svg.style('cursor', 'crosshair');
-
-					}
-				});
-				
-				document.addEventListener('keyup', (event) => {
-					if (event.key === 'Control') {
-						this.isCtrlPressed = false;
-						svg.style('cursor', 'default');
-
-					}
-				});
 				
 	
 				// Function to reset all variables to default using the global default constant
