@@ -1,24 +1,25 @@
 # Smart Connections Graph View
 
-Welcome to the Smart Connections Graph View Plugin! This plugin integrates seamlessly with the [Smart Connections](https://github.com/brianpetro/obsidian-smart-connections) tool, offering an advanced, interactive way to visualize connections between your notes. Our goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.
+Welcome to the Smart Connections Graph View Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. Our goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.
 
 ## Features
 
-- **Dynamic Force-Directed Graph**: Visualize connections as a force-directed graph where nodes represent notes or specific excerpts from them and edges represent connections.
-- **Adjustable Visualization Settings**: Customize node size, link thickness, and text fade thresholds to tailor the visualization to your preferences.
-- **Interactive Tooltips**: Hover over links to see detailed information about connections.
-- **Customizable Forces**: Adjust the repel force, link force, and center force for a more personalized layout.
+- **Dynamic Force-Directed Graph:** Visualize connections as a force-directed graph where nodes represent notes or specific excerpts from them and edges represent connections.
+- **Adjustable Visualization Settings:** Customize node size, link thickness, and text fade thresholds to tailor the visualization to your preferences.
+- **Interactive Tooltips:** Hover over links to see detailed information about connections.
+- **Customizable Forces:** Adjust the repel force, link force, and center force for a more personalized layout.
+- **Selection Box:** Multi-select nodes using a selection box, with accurate selection regardless of zoom and pan levels.
 
 ## Installation
 
 Getting started with the Smart Connections Graph View Plugin is easy. Follow these steps to install and integrate it with your Smart Connections setup:
 
-1. **Install Smart Connections**: Ensure you have the Smart Connections plugin installed in your Obsidian environment.
-2. **Install Visualization Plugin**: Download and install the Smart Connections Visualization Plugin from the Obsidian Community Plugins.
+1. **Install Smart Connections Plugin:** Ensure you have the Smart Connections plugin installed in your Obsidian environment.
+2. **Install Smart Connections Graph View Plugin:** Download and install the Smart Connections Visualization Plugin from the Obsidian Community Plugins.
 
 ## Usage
 
-Once installed, the Smart Connections Visualization Plugin provides an intuitive interface to explore your notes' connections.  Click on the dice icon to the left that says "Smart Graph"
+Once installed, the Smart Connections Visualization Plugin provides an intuitive interface to explore your notes' connections. Click on the dice icon to the left that says "Smart Graph".
 
 ### Opening the Visualization
 
@@ -29,22 +30,46 @@ To open the visualization:
 
 ### Interacting with the Graph
 
-- **Zooming**: Use the mouse wheel or touchpad to zoom in and out of the graph.
-- **Panning**: Click and drag the graph to move it around.
-- **Hovering**: Hover over links to see tooltips displaying connection details.
+- **Zooming:** Use the mouse wheel or touchpad to zoom in and out of the graph.
+- **Panning:** Click and drag the graph to move it around.
+- **Hovering:** Hover over links to see tooltips displaying connection details.
 
 ### Customizing the Visualization
 
 Access the settings menu by clicking the gear icon in the top right corner of the visualization pane. Here, you can adjust various parameters:
 
-- **Score Threshold**: Adjust the threshold for displaying connections based on their relevance.
-- **Node Size**: Change the size of the nodes to make them more visible or to declutter the graph.
-- **Link Thickness**: Modify the thickness of the links to better visualize connection strengths.
-- **Text Fade Threshold**: Set the zoom level at which labels fade in and out.
-- **Repel Force**: Adjust the force that pushes nodes apart.
-- **Link Force**: Modify the strength of the connections.
-- **Center Force**: Change the force that keeps the graph centered.
+- **Score Threshold:** Adjust the threshold for displaying connections based on their relevance.
+- **Node Size:** Change the size of the nodes to make them more visible or to declutter the graph.
+- **Link Thickness:** Modify the thickness of the links to better visualize connection strengths.
+- **Text Fade Threshold:** Set the zoom level at which labels fade in and out.
+- **Repel Force:** Adjust the force that pushes nodes apart.
+- **Link Force:** Modify the strength of the connections.
+- **Center Force:** Change the force that keeps the graph centered.
 
+## How To
+
+### Panning and Zooming
+
+- **Zooming:** Use the mouse wheel or touchpad to zoom in and out of the graph. This allows you to focus on specific areas or get a broad view of all connections.
+- **Panning:** Click and drag the graph to move it around. This helps you navigate through different parts of the graph without changing the zoom level.
+
+### Multi-Selecting Nodes
+
+- **Selection Box:** Hold the `Ctrl` key and click and drag to create a selection box. Nodes within the box will be selected. The selection box works correctly regardless of the zoom and pan levels.
+- **Individual Node Selection:** Hold the `Alt` key and click on individual nodes to select or deselect them without affecting other selected nodes.
+- **Clearing Selections:** Click on an empty space in the graph or press `Esc` to clear all selections.
+
+### Settings Menu
+
+1. Click the gear icon in the top right corner of the visualization pane to open the settings menu.
+2. Adjust various parameters to customize the visualization to your liking:
+   - **Score Threshold:** Use the slider to set the minimum score for displaying connections.
+   - **Node Size:** Adjust the slider to change the size of the nodes.
+   - **Link Thickness:** Use the slider to modify the thickness of the links.
+   - **Text Fade Threshold:** Set the zoom level at which labels appear or disappear.
+   - **Repel Force:** Adjust the slider to change the force that pushes nodes apart.
+   - **Link Force:** Modify the slider to change the strength of the connections.
+   - **Center Force:** Use the slider to change the force that keeps the graph centered.
 
 ## Community and Support
 
