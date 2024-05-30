@@ -25,7 +25,7 @@ Once installed, the Smart Connections Visualization Plugin provides an intuitive
 
 To open the visualization:
 
-1. Open the command palette and select "Smart Connections: Open Visualization."
+1. Select the ribbon icon to the left that will display "Smart Graph"
 2. The visualization pane will appear, displaying a dynamic force-directed graph of your notes and their connections.
 
 ### Interacting with the Graph
@@ -38,9 +38,9 @@ To open the visualization:
 
 Access the settings menu by clicking the gear icon in the top right corner of the visualization pane. Here, you can adjust various parameters:
 
-- **Score Threshold:** Adjust the threshold for displaying connections based on their relevance.
+- **Significance Threshold:** Adjust the threshold for displaying connections based on their significance.
 - **Node Size:** Change the size of the nodes to make them more visible or to declutter the graph.
-- **Link Thickness:** Modify the thickness of the links to better visualize connection strengths.
+- **Link Thickness:** Modify the thickness of the links to better visualize connection significance.
 - **Text Fade Threshold:** Set the zoom level at which labels fade in and out.
 - **Repel Force:** Adjust the force that pushes nodes apart.
 - **Link Force:** Modify the strength of the connections.
@@ -55,7 +55,7 @@ Access the settings menu by clicking the gear icon in the top right corner of th
 
 ### Multi-Selecting Nodes
 
-- **Selection Box:** Hold the `Ctrl` key and click and drag to create a selection box. Nodes within the box will be selected. The selection box works correctly regardless of the zoom and pan levels.
+- **Selection Box:** Hold the `Ctrl` key and click and drag to create a selection box. Nodes within the box will be selected.
 - **Individual Node Selection:** Hold the `Alt` key and click on individual nodes to select or deselect them without affecting other selected nodes.
 - **Clearing Selections:** Click on an empty space in the graph or press `Esc` to clear all selections.
 
