@@ -3,11 +3,11 @@ import * as d3 from "d3";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-interface MyPluginSettings {
+interface ScGraphViewSettings {
     mySetting: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: ScGraphViewSettings = {
     mySetting: 'default'
 }
 
@@ -66,15 +66,15 @@ class MyItemView extends ItemView {
     }
 
     getViewType(): string {
-        return "My Item View";
+        return "Smart Graph View";
     }
 
     getDisplayText(): string {
-        return "My Item View";
+        return "Smart Graph View";
     }
 
     getIcon(): string {
-        return "dice";
+        return "git-fork";
     }
 
 	// Function to update node appearance based on selection and highlight state
@@ -631,9 +631,7 @@ class MyItemView extends ItemView {
 					console.log('Update already in progress. Skipping...');
 					return;
 				} else {
-
 					console.log('Update not in progress . Skipping...');
-
 				}
 				console.log('updating');
 
@@ -676,7 +674,6 @@ class MyItemView extends ItemView {
 					}
 					return true;
 				});
-		
 				console.log('Validated Links:', this.validatedLinks);
 	
 				// Safeguard to prevent infinite loop
@@ -757,7 +754,7 @@ class MyItemView extends ItemView {
 							
 								that.app.workspace.trigger("hover-link", {
 									event,
-									source: 'D3',
+									source: 'Smart Graph',
 									hoverParent: this.parentElement,
 									targetEl: this,
 									linktext: d.id,
@@ -1378,7 +1375,6 @@ class MyItemView extends ItemView {
 	}
 
 }
-
 /*
 	Main Colors
 	Menu text: #a3aecb
@@ -1389,31 +1385,29 @@ class MyItemView extends ItemView {
 	SliderKnob: #f3ee5d
 */
 	
-
-export default class MyPlugin extends Plugin {
-    settings: MyPluginSettings;
+export default class ScGraphView extends Plugin {
+    settings: ScGraphViewSettings;
 
     async onload() {
         await this.loadSettings();
-
         // Register the new view
-        this.registerView("My Item View", (leaf: WorkspaceLeaf) => new MyItemView(leaf));
+        this.registerView("Smart Graph View", (leaf: WorkspaceLeaf) => new MyItemView(leaf));
 
-		 // Register hover link source
-		 this.registerHoverLinkSource('D3', {
-			display: 'D3 Hover Link Source',
-			defaultMod: true
-		});
+				// Register hover link source
+				this.registerHoverLinkSource('Smart Graph', {
+					display: 'Smart Graph Hover Link Source',
+					defaultMod: true
+				});
 
         // This creates an icon in the left ribbon.
-        const ribbonIconEl = this.addRibbonIcon('dice', 'Smart Graph', (evt: MouseEvent) => {
+        const ribbonIconEl = this.addRibbonIcon('git-fork', 'Smart Graph', (evt: MouseEvent) => {
             // Called when the user clicks the icon.
             // Create a new leaf in the current workspace
             let leaf = this.app.workspace.getLeaf(true);
     
             // Set the new leaf's view to your custom view
             leaf.setViewState({
-                type: "My Item View",
+                type: "Smart Graph View",
                 active: true,
             });
         })
@@ -1434,7 +1428,7 @@ export default class MyPlugin extends Plugin {
         
                 // Set the new leaf's view to your custom view
                 leaf.setViewState({
-                    type: "My Item View",
+                    type: "Smart Graph View",
                     active: true,
                 });
             }
@@ -1449,7 +1443,7 @@ export default class MyPlugin extends Plugin {
         
         //         // Set the new leaf's view to your custom view
         //         leaf.setViewState({
-        //             type: "My Item View",
+        //             type: "Smart Graph View",
         //             active: true,
         //         });
         //     }
@@ -1465,7 +1459,7 @@ export default class MyPlugin extends Plugin {
         
                 // Set the new leaf's view to your custom view
                 leaf.setViewState({
-                    type: "My Item View",
+                    type: "Smart Graph View",
                     active: true,
                 });
             }
@@ -1496,9 +1490,9 @@ export default class MyPlugin extends Plugin {
 }
 
 // class SampleSettingTab extends PluginSettingTab {
-//     plugin: MyPlugin;
+//     plugin: ScGraphView;
 
-//     constructor(app: App, plugin: MyPlugin) {
+//     constructor(app: App, plugin: ScGraphView) {
 //         super(app, plugin);
 //         this.plugin = plugin;
 //     }
