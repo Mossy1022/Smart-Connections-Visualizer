@@ -30,10 +30,13 @@ declare global {
 class MyItemView extends ItemView {
 
 	currentNoteKey: string; // Define the currentNoteKey property
+	centralNote: any;
+	centralNode: any;
+	connectionType = 'block';
     isHovering: boolean; // Add a flag to track hover state
-	nodeLinkCount: { [key: string]: number } = {}; // Define nodeLinkCount outside of the function
-	mainNodeId = '-1';
-	scoreThreshold = 0.8;
+	nodeLinkCount: { [key: string]: number } = {}; // Define no
+	centralNodeId = '-1';
+	significanceScoreThreshold = 0.8;
 	settingsInstantiated = false;
 	nodeSize = 3;
 	linkThickness = 0.3;
@@ -114,33 +117,46 @@ class MyItemView extends ItemView {
 			}
 		
 			const updateConnections = () => {
+
+				// Reset Variables
 				nodes = [];
 				links = [];
 				connections = [];
+				this.minScore = 1;
+				this.maxScore = 0;
 		
+				// Dont bother executing if we don't have a note to find connections for
 				if (!this.currentNoteKey) return;
 		
-				const note = smartNotes[this.currentNoteKey];
-				const noteConnections = note.find_connections().filter((connection: any) => connection.score >= this.scoreThreshold);
-	
+				this.centralNote = smartNotes[this.currentNoteKey];
+				const noteConnections = this.centralNote.find_connections().filter(
+					(connection: any) => connection.score >= this.significanceScoreThreshold); 
+
+				console.log('central note: ', this.centralNote);
+				console.log('note connections: ', this.centralNote.find_connections());
+
 				// Add the note node itself
-				if (note.key && note.key.trim() !== '' && !nodes.some(node => node.id === note.key)) {
+				if (this.centralNote.key && this.centralNote.key.trim() !== '' && !nodes.some(node => node.id === this.centralNote.key)) {
 					nodes.push({
-						id: note.key,
-						name: note.key,
+						id: this.centralNote.key,
+						name: this.centralNote.key,
 						group: 'note',
 						x: Math.random() * 1000,
 						y: Math.random() * 1000,
 						fx: null,
 						fy: null
 					});
+
+					// Assign central node - 1st element in the array so far
+					this.centralNode = nodes[0]; 
+
 				}
 		
-				// Filter out only blocks
-				const blockConnections = noteConnections.filter((connection: any) => connection.__proto__.constructor.name === 'SmartBlock');
-		
+				// Filter connections based on the selected connection type
+				const filteredConnections = noteConnections.filter((connection: any) => connection.__proto__.constructor.name === (this.connectionType === 'block' ? 'SmartBlock' : 'SmartNote'));		
 				// Adding connections from blockConnections
-				blockConnections.forEach((connection: any, index: any) => {
+
+				filteredConnections.forEach((connection: any, index: any) => {
 					if (connection && connection.data && connection.data.key && connection.data.key.trim() !== '') {
 						const connectionId = connection.data.key;
 		
@@ -157,13 +173,13 @@ class MyItemView extends ItemView {
 						}
 		
 						links.push({
-							source: note.key,
+							source: this.centralNote.key,
 							target: connectionId,
 							value: connection.score || 0  // Ensure score is defined
 						});
 		
 						connections.push({
-							source: note.key,
+							source: this.centralNote.key,
 							target: connectionId,
 							score: connection.score || 0  // Ensure score is defined
 						});
@@ -246,10 +262,6 @@ class MyItemView extends ItemView {
 				
 			const svgGroup = svg.append('g');
 	
-			let mainNodeTemp = nodes.find(node => node.id === this.mainNodeId);
-	
-			const mainNode = mainNodeTemp;
-	
 			const updateLabelOpacity = (zoomLevel: number) => {
 				const maxOpacity = 1; // Maximum opacity
 				const minOpacity = 0; // Minimum opacity
@@ -283,16 +295,16 @@ class MyItemView extends ItemView {
 			};
 			
 	
-	
+			//TODO:: Refactor this
 			// Define a custom center force to center the main node
 			const customCenterForce = (alpha: number) => {
-				if (mainNode) {
-					mainNode.x += (width / 2 - mainNode.x) * this.centerForce * alpha;
-					mainNode.y += (height / 2 - mainNode.y) * this.centerForce * alpha;
+				if (that.centralNode) {
+					that.centralNode.x += (width / 2 - that.centralNode.x) * this.centerForce * alpha;
+					that.centralNode.y += (height / 2 - that.centralNode.y) * this.centerForce * alpha;
 				}
 			};
 	
-		// Function to create a custom center force for the main node
+			// Function to create a custom center force for the main node
 			const customCenterForce2 = (nodeId: string, centerX: number, centerY: number) => {
 				return () => {
 					nodes.forEach((node: any) => {
@@ -304,9 +316,9 @@ class MyItemView extends ItemView {
 				};
 			};
 			
-			// Function to normalize significance score to have links with higher scores closer to the central node
+			// Function to normalize significance score and inverse it to have links with higher scores closer to the central node
 			function inverseNormalize(value : number) {
-				return 1 - ((value - that.minScore) / (that.maxScore - that.minScore)); // Invert the inverseNormalized value
+				return 1 - ((value - that.minScore) / (that.maxScore - that.minScore));
 			}		
 	
 			const simulation = d3.forceSimulation()
@@ -316,7 +328,7 @@ class MyItemView extends ItemView {
 			.force('x', d3.forceX(width / 2).strength(this.centerForce))
 			.force('y', d3.forceY(height / 2).strength(this.centerForce))
 			.force('collide', d3.forceCollide().radius(DEFAULT_NETWORK_SETTINGS.nodeSize + 3).strength(0.7)) // Adjust radius based on node size
-			.force('customCenter', customCenterForce2(this.mainNodeId, width / 2, height / 2)) // Add custom centering force
+			.force('customCenter', customCenterForce2(this.centralNodeId, width / 2, height / 2)) // Add custom centering force
 			// TODO:: Keep here for a while just in case
 			// .velocityDecay(0.4) // Increased damping factor for smoother transitions
 			// .alphaDecay(0.15) // Increased alpha decay for faster cooling down
@@ -358,7 +370,6 @@ class MyItemView extends ItemView {
 	
 			let nodeSelection: any, linkSelection: any, labelSelection: any, validatedLinks: any;
 	
-		
 			let nodeLabels = svgGroup.append('g')
 				.attr('class', 'labels')
 				.selectAll('text')
@@ -368,7 +379,7 @@ class MyItemView extends ItemView {
 				.attr('dy', '.35em')
 				.text((d: any) => d.name);
 		
-				const tooltip = d3.select(this.contentEl)
+			const tooltip = d3.select(this.contentEl)
 				.append('div')
 				.attr('class', 'tooltip')
 				.style('position', 'absolute')
@@ -381,15 +392,20 @@ class MyItemView extends ItemView {
 	
 			// Add tooltip event listeners to links
 			link.on('mouseover', function(event, d) {
+
 				tooltip.text(`Significance: ${d.scoretoFixed(3)}`)
 			.style('visibility', 'visible');
 				
 			}).on('mousemove', function(event) {
+
 				const [x, y] = d3.pointer(event);
 				tooltip.style('top', `${y + 10}px`)
 					.style('left', `${x + 10}px`);
+
 			}).on('mouseout', function() {
+
 				tooltip.style('visibility', 'hidden');
+
 			});
 			
 			// TODO:: Uncomment back in when want to start on tooltop func
@@ -432,14 +448,15 @@ class MyItemView extends ItemView {
 			
 			// Function to rerender visualization with most up to date settings
 			const updateVisualization = (newScoreThreshold?: number) => {
+
 				if (newScoreThreshold !== undefined) {
-					this.scoreThreshold = newScoreThreshold;
+					this.significanceScoreThreshold = newScoreThreshold;
 				}
 	
 				updateConnections();
 		
 				// console.log('Connections before filtering:', connections);
-				const filteredConnections = connections.filter((connection: any) => connection.score >= this.scoreThreshold);
+				const filteredConnections = connections.filter((connection: any) => connection.score >= this.significanceScoreThreshold);
 				// console.log('Filtered Connections:', filteredConnections);
 		
 				let visibleNodes = new Set<string>();
@@ -460,13 +477,6 @@ class MyItemView extends ItemView {
 				}).filter(Boolean);
 		
 				console.log('Visible Nodes:', nodesData);
-	
-				const updateForces = () => {
-					simulation.alpha(0.3).restart(); // Restart the simulation with initial alpha
-					setTimeout(() => {
-						simulation.alphaTarget(0).stop(); // Stop the simulation after 5 seconds
-					}, 2000); 
-				};
 		
 				validatedLinks = filteredConnections.filter((link) => {
 					const sourceNode = nodesData.find(node => node.id === link.source);
@@ -495,22 +505,30 @@ class MyItemView extends ItemView {
 				}		
 	
 				// Determine the main node (the node with the highest link count)
-				this.mainNodeId = Object.keys(this.nodeLinkCount).reduce((a, b) => this.nodeLinkCount[a] > this.nodeLinkCount[b] ? a : b);
+				this.centralNodeId = Object.keys(this.nodeLinkCount).reduce((a, b) => this.nodeLinkCount[a] > this.nodeLinkCount[b] ? a : b);
 				const mainNodeSize = maxNodeSize;
 				const otherNodeSize = minNodeSize;
 	
-				const mainNodeTemp = nodesData.find(node => node.id === this.mainNodeId);
-				if (mainNodeTemp) {
-					mainNodeTemp.fx = width / 2;
-					mainNodeTemp.fy = height / 2;
+				// Move forces towards central node
+				if (this.centralNode) {
+					this.centralNode.fx = width / 2;
+					this.centralNode.fy = height / 2;
 				}
+
+				// Ensure lasting jittering of the nodes doesn't happen, so stop after 2 seconds
+				const updateForces = () => {
+					simulation.alpha(0.3).restart(); // Restart the simulation with initial alpha
+					setTimeout(() => {
+						simulation.alphaTarget(0).stop(); // Stop the simulation after 2 seconds
+					}, 2000); 
+				};
 		
 				nodeSelection = svgGroup.select('g.nodes').selectAll('circle')
 					.data(nodesData, (d: any) => d.id)
 					.join(
 						enter => enter.append('circle')
 							.attr('class', 'node')
-							.attr('r', d => d.id === this.mainNodeId ? this.nodeSize + 2 : this.nodeSize)
+							.attr('r', d => d.id === this.centralNodeId ? this.nodeSize + 2 : this.nodeSize)
 							.attr('fill', d => d.group === 'note' ? '#7c8594' : '#926ec9')
 							.attr('stroke', d => d.group === 'note' ? '#7c8594' : '#926ec9')
 							.attr('stroke-width', 0.3)
@@ -531,12 +549,17 @@ class MyItemView extends ItemView {
 								})
 							)
 							.on('mouseover', function(event, d: any) {
-								if (d.id !== that.mainNodeId) {
+
+								if (d.id !== that.centralNodeId) {
 									d3.select(this).transition().duration(500).attr('fill', '#d46ebe'); // Animate fill color to #d46ebe
 								}
+
 								d3.select(this).attr('stroke', '#fff'); // Change stroke color to white on hover
+
 								highlightNode(d);
+
 								svgGroup.select(`text[data-id='${d.id}']`).transition().duration(250).attr('y', d.y + 4); // Animate label down 10 pixels
+								
 								event.stopPropagation();
 								that.isHovering = true;
 	
@@ -549,7 +572,7 @@ class MyItemView extends ItemView {
 								});
 							})
 							.on('mouseout', function(event, d: any) {
-								if (d.id !== that.mainNodeId) {
+								if (d.id !== that.centralNodeId) {
 									d3.select(this).transition().duration(500).attr('fill', '#926ec9'); // Animate fill color back to #926ec9
 								}
 								d3.select(this).attr('stroke', 'transparent'); // Change stroke color back to less visible on mouse out
@@ -558,7 +581,7 @@ class MyItemView extends ItemView {
 								that.isHovering = false;
 							}),
 						update => update
-							.attr('r', d => d.id === this.mainNodeId ? mainNodeSize : otherNodeSize)
+							.attr('r', d => d.id === this.centralNodeId ? mainNodeSize : otherNodeSize)
 							.attr('fill', d => d.group === 'note' ? '#7c8594' : '#926ec9')
 							.attr('stroke', d => d.group === 'note' ? '#7c8594' : '#926ec9')
 							.attr('opacity', 1)
@@ -676,7 +699,7 @@ class MyItemView extends ItemView {
 	
 				const highlightNode = (node: any) => {
 					nodeSelection.transition().duration(500)
-						.attr('fill', (d: any) => (d.id !== this.mainNodeId && (d.id === node.id || validatedLinks.some((link: any) => (link.source === node && link.target === d) || (link.target === node && link.source === d)))) ? '#d46ebe' : (d.id === this.mainNodeId ? '#7c8594' : '#926ec9'))
+						.attr('fill', (d: any) => (d.id !== this.centralNodeId && (d.id === node.id || validatedLinks.some((link: any) => (link.source === node && link.target === d) || (link.target === node && link.source === d)))) ? '#d46ebe' : (d.id === this.centralNodeId ? '#7c8594' : '#926ec9'))
 						.attr('opacity', (d: any) => (d.id === node.id || validatedLinks.some((link: any) => (link.source === node && link.target === d) || (link.target === node && link.source === d))) ? 1 : 0.1);
 	
 					linkSelection.transition().duration(500)
@@ -688,7 +711,7 @@ class MyItemView extends ItemView {
 	
 				const unhighlightNode = () => {
 					nodeSelection.transition().duration(500)
-						.attr('fill', (d: any) => (d.id !== this.mainNodeId ? '#926ec9' : '#7b8493'))
+						.attr('fill', (d: any) => (d.id !== this.centralNodeId ? '#926ec9' : '#7b8493'))
 						.attr('opacity', 1);
 					linkSelection.transition().duration(500).attr('opacity', 1);
 					labelSelection.transition().duration(500).attr('opacity', 1);
@@ -739,8 +762,19 @@ class MyItemView extends ItemView {
 							<span class="arrow-icon">${rightArrow}</span>Filters
 						</div>			
 						<div class="accordion-content">
-							<label id="scoreThresholdLabel" for="scoreThreshold">Signficance Threshold: ${this.scoreThreshold}</label>
-							<input type="range" id="scoreThreshold" class="slider" name="scoreThreshold" min="0" max="0.99" value="${this.scoreThreshold}" step="0.01">
+							<div class="slider-container">
+								<label id="scoreThresholdLabel" for="scoreThreshold">Signficance Threshold: ${this.significanceScoreThreshold}</label>
+								<input type="range" id="scoreThreshold" class="slider" name="scoreThreshold" min="0" max="0.99" value="${this.significanceScoreThreshold}" step="0.01">
+							</div>
+							<label class="settings-item-content-label">Connection Type:</label>
+							<div class="radio-container">
+								<label>
+									<input type="radio" name="connectionType" value="block" ${this.connectionType === 'block' ? 'checked' : ''}> Block
+								</label>
+								<label>
+									<input type="radio" name="connectionType" value="note" ${this.connectionType === 'note' ? 'checked' : ''}> Note
+								</label>
+							</div>
 						</div>
 					</div>
 					<!--
@@ -771,11 +805,11 @@ class MyItemView extends ItemView {
 							</div>
 							<div class="slider-container">
 								<label id="minLinkThicknessLabel" for="minLinkThickness">Min Link Thickness: ${this.minLinkThickness}</label>
-								<input type="range" id="minLinkThickness" class="slider" name="minLinkThickness" min="0.1" max="5" value="${this.minLinkThickness}" step="0.01">
+								<input type="range" id="minLinkThickness" class="slider" name="minLinkThickness" min="0.1" max="10" value="${this.minLinkThickness}" step="0.01">
 							</div>
 							<div class="slider-container">
 								<label id="maxLinkThicknessLabel" for="maxLinkThickness">Max Link Thickness: ${this.maxLinkThickness}</label>
-								<input type="range" id="maxLinkThickness" class="slider" name="maxLinkThickness" min="0.1" max="5" value="${this.maxLinkThickness}" step="0.01">
+								<input type="range" id="maxLinkThickness" class="slider" name="maxLinkThickness" min="0.1" max="10" value="${this.maxLinkThickness}" step="0.01">
 							</div>
 							<!-- <div class="slider-container">
 								<label id="lineThicknessLabel" for="lineThickness">Line Thickness: ${this.linkThickness}</label>
@@ -852,7 +886,18 @@ class MyItemView extends ItemView {
 				const minLinkThicknessLabel = document.getElementById('minLinkThicknessLabel');
 				const maxLinkThicknessSlider = document.getElementById('maxLinkThickness') as HTMLInputElement;
 				const maxLinkThicknessLabel = document.getElementById('maxLinkThicknessLabel');
-	
+				const connectionTypeRadios = document.querySelectorAll('input[name="connectionType"]');
+
+				// Event listener for Connection Type Radios slider
+				if (connectionTypeRadios) {
+					connectionTypeRadios.forEach(radio => {
+						radio.addEventListener('change', (event) => {
+							this.connectionType = (event.target as HTMLInputElement).value;
+							updateVisualization();
+						});
+					});
+				}	
+
 				// Event listener for Min Link Thickness slider
 				if (minLinkThicknessSlider) {
 					minLinkThicknessSlider.addEventListener('input', (event) => {
@@ -990,7 +1035,7 @@ class MyItemView extends ItemView {
 				
 				// Function to update node sizes based on the slider value
 				const updateNodeSizes = () => {
-					nodeSelection.attr('r', (d: any) => d.id === this.mainNodeId ? this.nodeSize + 3 : this.nodeSize);
+					nodeSelection.attr('r', (d: any) => d.id === this.centralNodeId ? this.nodeSize + 3 : this.nodeSize);
 				};
 				
 				// Function to debounce calls to updateVisualization
@@ -1009,7 +1054,7 @@ class MyItemView extends ItemView {
 					scoreThresholdSlider.addEventListener('input', (event) => {
 						const newScoreThreshold = parseFloat((event.target as HTMLInputElement).value);
 						if (scoreThresholdLabel) {
-							scoreThresholdLabel.textContent = `Score Threshold: ${newScoreThreshold}`;
+							scoreThresholdLabel.textContent = `Significance Threshold: ${newScoreThreshold}`;
 						}
 					});
 	
@@ -1070,7 +1115,7 @@ class MyItemView extends ItemView {
 	
 				// Function to reset all variables to default using the global default constant
 				const resetToDefault = () => {
-					this.scoreThreshold = DEFAULT_NETWORK_SETTINGS.scoreThreshold;
+					this.significanceScoreThreshold = DEFAULT_NETWORK_SETTINGS.scoreThreshold;
 					this.nodeSize = DEFAULT_NETWORK_SETTINGS.nodeSize;
 					this.linkThickness = DEFAULT_NETWORK_SETTINGS.linkThickness;
 					this.repelForce = DEFAULT_NETWORK_SETTINGS.repelForce;
@@ -1079,8 +1124,8 @@ class MyItemView extends ItemView {
 					this.centerForce = DEFAULT_NETWORK_SETTINGS.centerForce;
 	
 					// Update slider values
-					if (scoreThresholdSlider) scoreThresholdSlider.value = `${this.scoreThreshold}`;
-					if (scoreThresholdLabel) scoreThresholdLabel.textContent = `Score Threshold: ${this.scoreThreshold}`;
+					if (scoreThresholdSlider) scoreThresholdSlider.value = `${this.significanceScoreThreshold}`;
+					if (scoreThresholdLabel) scoreThresholdLabel.textContent = `Significance Threshold: ${this.significanceScoreThreshold}`;
 					if (nodeSizeSlider) nodeSizeSlider.value = `${this.nodeSize}`;
 					if (nodeSizeLabel) nodeSizeLabel.textContent = `Node Size: ${this.nodeSize}`;
 					if (lineThicknessSlider) lineThicknessSlider.value = `${this.linkThickness}`;
@@ -1093,7 +1138,13 @@ class MyItemView extends ItemView {
 					if (linkForceLabel) linkForceLabel.textContent = `Link Force: ${this.linkForce}`;
 					if (linkDistanceSlider) linkDistanceSlider.value = `${this.linkDistance}`;
 					if (linkDistanceLabel) linkDistanceLabel.textContent = `Link Distance: ${this.linkDistance}`;
-	
+					if (fadeThresholdSlider) fadeThresholdSlider.value = `${this.textFadeThreshold}`;
+					if (fadeThresholdLabel) fadeThresholdLabel.textContent = `Fade Threshold: ${this.textFadeThreshold}`;
+					if (minLinkThicknessSlider) minLinkThicknessSlider.value = `${this.minLinkThickness}`;
+					if (minLinkThicknessLabel) minLinkThicknessLabel.textContent = `Min Link Thickness: ${this.minLinkThickness}`;
+					if (maxLinkThicknessSlider) maxLinkThicknessSlider.value = `${this.maxLinkThickness}`;
+					if (maxLinkThicknessLabel) maxLinkThicknessLabel.textContent = `Max Link Thickness: ${this.maxLinkThickness}`;
+
 					// Reapply settings
 					updateNodeSizes();
 					updateLinkThickness();
@@ -1106,7 +1157,7 @@ class MyItemView extends ItemView {
 	
 					// Restart the simulation with the new settings
 					simulation.alpha(0.3).alphaTarget(0).restart();
-					updateVisualization(this.scoreThreshold);
+					updateVisualization(this.significanceScoreThreshold);
 				};
 	
 	
@@ -1137,7 +1188,7 @@ class MyItemView extends ItemView {
 	Menu text: #a3aecb
 	HoveredOverNode: #d46ebe
 	NormalNode: #926ec9
-	CentralNode: #7c8594
+	centralNode: #7c8594
 	Link: #4c7787
 	SliderKnob: #f3ee5d
 */

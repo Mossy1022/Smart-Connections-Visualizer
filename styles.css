@@ -107,3 +107,16 @@ If your plugin does not need CSS, delete this file.
     margin-right: 8px;
     vertical-align: middle;
 }
+
+.radio-container {
+    margin-top: 10px;
+}
+
+.radio-container label {
+    margin-right: 10px;
+    color: #a3aecb;
+}
+
+.settings-item-content-label {
+    margin-right: 20px;
+}
