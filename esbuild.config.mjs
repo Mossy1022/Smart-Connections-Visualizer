@@ -1,6 +1,11 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
+import dotenv from "dotenv";
+dotenv.config();
+import fs from "fs";
+import path from "path";
+
 
 const banner =
 `/*
@@ -45,4 +50,12 @@ if (prod) {
 	process.exit(0);
 } else {
 	await context.watch();
+	// copy the built plugin to the obsidian plugins folder
+	if (!fs.existsSync(path.join(process.env.OBSIDIAN_PLUGINS_PATH, "smart-connections-graph-view"))) {
+		fs.mkdirSync(path.join(process.env.OBSIDIAN_PLUGINS_PATH, "smart-connections-graph-view"));
+	}
+	fs.copyFileSync("./main.js", path.join(process.env.OBSIDIAN_PLUGINS_PATH, "smart-connections-graph-view/main.js"));
+	fs.copyFileSync("./manifest.json", path.join(process.env.OBSIDIAN_PLUGINS_PATH, "smart-connections-graph-view/manifest.json"));
+	fs.copyFileSync("./styles.css", path.join(process.env.OBSIDIAN_PLUGINS_PATH, "smart-connections-graph-view/styles.css"));
 }
+
