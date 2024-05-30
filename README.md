@@ -15,15 +15,15 @@ Welcome to the Smart Connections Graph View Plugin! This plugin integrates seaml
 Getting started with the Smart Connections Graph View Plugin is easy. Follow these steps to install and integrate it with your Smart Connections setup:
 
 1. **Install Smart Connections Plugin:** Ensure you have the Smart Connections plugin installed in your Obsidian environment.
-2. **Install Smart Connections Graph View Plugin:** Download and install the Smart Connections Visualization Plugin from the Obsidian Community Plugins.
+2. **Install Smart Connections Graph View Plugin:** Download and install the Smart Connections  Graph View Plugin from the Obsidian Community Plugins.
 
 ## Usage
 
-Once installed, the Smart Connections Visualization Plugin provides an intuitive interface to explore your notes' connections. Click on the dice icon to the left that says "Smart Graph".
+Once installed, the Smart Connections Graph View Plugin provides an intuitive interface to explore your notes' connections. Click on the dice icon to the left that says "Smart Graph".
 
-### Opening the Visualization
+### Opening the Graph View
 
-To open the visualization:
+To open the Graph View:
 
 1. Select the ribbon icon to the left that will display "Smart Graph"
 2. The visualization pane will appear, displaying a dynamic force-directed graph of your notes and their connections.
