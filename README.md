@@ -56,7 +56,7 @@ Access the settings menu by clicking the gear icon in the top right corner of th
 ### Multi-Selecting Nodes
 
 - **Selection Box:** Hold the `Ctrl` key and click and drag to create a selection box. Nodes within the box will be selected.
-- **Individual Node Selection:** Hold the `Alt` ('Option' for Mac) key and click on individual nodes to select or deselect them without affecting other selected nodes.
+- **Individual Node Selection:** Hold the `Alt` (`Option` for Mac) key and click on individual nodes to select or deselect them without affecting other selected nodes.
 - **Clearing Selections:** Click on an empty space in the graph or press `Esc` to clear all selections.
 
 ### Settings Menu
