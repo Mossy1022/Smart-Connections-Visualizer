@@ -1,6 +1,6 @@
 # Smart Connections Graph View
 
-Welcome to the Smart Connections Graph View Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. Our goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.
+Welcome to the Smart Connections Graph View Plugin! This plugin integrates seamlessly with the [Smart Connections](https://github.com/brianpetro/obsidian-smart-connections) tool, offering an advanced, interactive way to visualize connections between your notes. Our goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.
 
 ## Features
 
