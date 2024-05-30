@@ -73,7 +73,7 @@ Inspired by Brian (creator of Smart Connections), I started an AI consulting com
 I've continuosly been giving webinars to both CDC and GDIT on the most significant AI updates, as well as in-person local community seminars around the Tampa Bay area. 
 One of my life's main questlines is to inspire people to take advantage of the outragous new abilities we have with AI and how we can use them to help us in our every day lives.
 
-I'd really like to go all in on my AI consulting company and continue development on this :)
+I'd really like to go all in on my AI consulting company and continue development on this when I can afford to :)
 
 ---
 
