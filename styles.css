@@ -120,3 +120,9 @@ If your plugin does not need CSS, delete this file.
 .settings-item-content-label {
     margin-right: 20px;
 }
+
+.selection-box {
+    stroke: #00f;
+    stroke-width: 1;
+    fill: rgba(0, 0, 255, 0.3);
+}

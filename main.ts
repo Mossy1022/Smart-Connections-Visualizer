@@ -34,8 +34,6 @@ class MyItemView extends ItemView {
 	centralNode: any;
 	connectionType = 'block';
     isHovering: boolean; // Add a flag to track hover state
-	nodeLinkCount: { [key: string]: number } = {}; // Define no
-	centralNodeId = '-1';
 	significanceScoreThreshold = 0.8;
 	settingsInstantiated = false;
 	nodeSize = 3;
@@ -47,13 +45,24 @@ class MyItemView extends ItemView {
 	textFadeThreshold = 1.1;
 	minScore = 1;
 	maxScore = 0;
+	minNodeSize = 3;
+	maxNodeSize = 6;
 	minLinkThickness = 0.3;
 	maxLinkThickness = 4;
+	nodeSelection : any;
+	linkSelection : any;
+	labelSelection : any;
+	updatingVisualization: boolean; // Add this flag
+	isCtrlPressed = false;
+    isDragging = false;
+    selectionBox: any;
+	validatedLinks : any;
 
     constructor(leaf: WorkspaceLeaf) {
         super(leaf);
 		this.currentNoteKey = '';
 		this.isHovering = false; 
+
     }
 
     getViewType(): string {
@@ -68,13 +77,92 @@ class MyItemView extends ItemView {
         return "dice";
     }
 
+	// Function to update node appearance based on selection and highlight state
+	updateNodeAppearance() {
+		this.nodeSelection.transition().duration(500)
+			.attr('fill', (d: any) => {
+				if (d.id === this.centralNode.id) {
+					return '#7c8594';
+				} else if (d.selected) {
+					return '#f3ee5d';
+				} else if (d.highlighted) {
+					return '#d46ebe';
+				} else {
+					return d.group === 'note' ? '#7c8594' : '#926ec9';
+				}
+			})
+			.attr('stroke', (d: any) => d.selected ? '#ff0' : 'transparent')
+			.attr('stroke-width', (d: any) => d.selected ? 2 : 0.3)
+			.attr('opacity', (d: any) => {
+				if (d.id === this.centralNode.id) {
+					return 1;
+				} else if (d.selected || d.highlighted) {
+					return 1;
+				} else if (this.isHovering) {
+					console.log('opacity low');
+					return 0.1;
+				} else {
+					console.log('opacity up');
+					return 1;
+				}
+			});
+	}
+	
+    // Function to toggle node selection
+    toggleNodeSelection(nodeId: string) {
+        const node = this.nodeSelection.data().find((d: any) => d.id === nodeId);
+        if (node) {
+            node.selected = !node.selected;
+            this.updateNodeAppearance();
+        }
+    }
+
+	 // Clear all selections
+	 clearSelections() {
+        this.nodeSelection.each((d: any) => d.selected = false);
+        this.updateNodeAppearance();
+    }
+
+	highlightNode(node: any) {
+		this.nodeSelection.each((d: any) => {
+			if (d.id !== this.centralNode.id) {
+				d.highlighted = (d.id === node.id || this.validatedLinks.some((link: any) =>
+					(link.source.id === node.id && link.target.id === d.id) ||
+					(link.target.id === node.id && link.source.id === d.id)));
+			}
+		});
+		this.updateNodeAppearance();
+	
+		this.linkSelection.transition().duration(500)
+			.attr('opacity', (d: any) => (d.source.id === node.id || d.target.id === node.id) ? 1 : 0.1);
+	
+		this.labelSelection.transition().duration(500)
+			.attr('opacity', (d: any) =>
+				(d.id === node.id || this.validatedLinks.some((link: any) =>
+					(link.source.id === node.id && link.target.id === d.id) ||
+					(link.target.id === node.id && link.source.id === d.id))) ? 1 : 0.1);
+	}
+	
+	
+	unhighlightNode() {
+		this.nodeSelection.each((d: any) => {
+			if (d.id !== this.centralNode.id && !d.selected) {
+				d.highlighted = false;
+			}
+		});
+		this.updateNodeAppearance();
+	
+		this.linkSelection.transition().duration(500).attr('opacity', 1);
+		this.labelSelection.transition().duration(500).attr('opacity', 1);
+	}
+	
+	
+
 	async onOpen() {
 
 		setTimeout(() => {
-
-			let minNodeSize = 3;
-			let maxNodeSize = 6;
 		
+			// To be used for functions that dont have this in the scope
 			let that = this;
 		
 			const smartNotes  = window.SmartSearch.main.env.smart_notes.items;
@@ -144,7 +232,10 @@ class MyItemView extends ItemView {
 						x: Math.random() * 1000,
 						y: Math.random() * 1000,
 						fx: null,
-						fy: null
+						fy: null,
+						selected: false, // Add selected property
+						highlighted : false
+
 					});
 
 					// Assign central node - 1st element in the array so far
@@ -168,7 +259,9 @@ class MyItemView extends ItemView {
 								x: Math.random() * 1000,
 								y: Math.random() * 1000,
 								fx: null,
-								fy: null
+								fy: null,
+								selected: false, // Add selected property
+								highlighted : false
 							});
 						}
 		
@@ -261,6 +354,93 @@ class MyItemView extends ItemView {
 					}));
 				
 			const svgGroup = svg.append('g');
+			
+			const startBoxSelection = (event: any) => {
+				if (!this.isCtrlPressed) return;
+			
+				this.isDragging = true;
+				const [x, y] = d3.pointer(event);
+			
+				this.selectionBox = svg.append('rect')
+					.attr('class', 'selection-box')
+					.attr('x', x)
+					.attr('y', y)
+					.attr('width', 0)
+					.attr('height', 0)
+					.attr('stroke', '#00f')
+					.attr('stroke-width', 1)
+					.attr('fill', 'rgba(0, 0, 255, 0.3)'); // Semi-transparent fill
+			
+				// Track existing selected nodes
+				this.nodeSelection.each((d: any) => {
+					d.tempSelected = d.selected;
+				});
+			};
+			
+			const updateBoxSelection = (event: any) => {
+				if (!this.isDragging) return;
+			
+				const [x, y] = d3.pointer(event);
+				const startX = parseFloat(this.selectionBox.attr('x'));
+				const startY = parseFloat(this.selectionBox.attr('y'));
+			
+				const newWidth = x - startX;
+				const newHeight = y - startY;
+			
+				this.selectionBox
+					.attr('width', Math.abs(newWidth))
+					.attr('height', Math.abs(newHeight))
+					.attr('x', newWidth < 0 ? x : startX)
+					.attr('y', newHeight < 0 ? y : startY);
+			
+				const endX = newWidth < 0 ? startX : startX + newWidth;
+				const endY = newHeight < 0 ? startY : startY + newHeight;
+			
+				const [startXSVG, startYSVG] = d3.pointer(event, svg.node());
+				const [endXSVG, endYSVG] = d3.pointer({ x: endX, y: endY }, svg.node());
+			
+				this.nodeSelection.each((d: any) => {
+					const nodeX = d.x;
+					const nodeY = d.y;
+					if (nodeX >= Math.min(startXSVG, endXSVG) && nodeX <= Math.max(startXSVG, endXSVG) && nodeY >= Math.min(startYSVG, endYSVG) && nodeY <= Math.max(startYSVG, endYSVG)) {
+						d.selected = true;
+					} else {
+						d.selected = d.tempSelected;
+					}
+				});
+			
+				this.updateNodeAppearance();
+			};
+			
+			const endBoxSelection = () => {
+				if (!this.isDragging) return;
+				this.isDragging = false;
+			
+				this.selectionBox.remove();
+			
+				// Clean up temporary selection state
+				this.nodeSelection.each((d: any) => {
+					delete d.tempSelected;
+				});
+			
+				this.updateNodeAppearance();
+			};
+			
+			// Attach mouse event listeners to the SVG
+			svg.on('mousedown', (event: any) => {
+				if (!this.isCtrlPressed) {
+					this.clearSelections();
+				}
+				startBoxSelection(event);
+			}).on('mousemove', updateBoxSelection)
+			  .on('mouseup', endBoxSelection)
+			  .on('click', function(event) {
+				if (!event.defaultPrevented && !that.isCtrlPressed) {
+					that.clearSelections();
+				}
+			});
+			
+			
 	
 			const updateLabelOpacity = (zoomLevel: number) => {
 				const maxOpacity = 1; // Maximum opacity
@@ -305,10 +485,10 @@ class MyItemView extends ItemView {
 			};
 	
 			// Function to create a custom center force for the main node
-			const customCenterForce2 = (nodeId: string, centerX: number, centerY: number) => {
+			const customCenterForce2 = (centerX: number, centerY: number) => {
 				return () => {
 					nodes.forEach((node: any) => {
-						if (node.id === nodeId) {
+						if (node.id === this.centralNode.id) {
 							node.x += (centerX - node.x) * 0.1;
 							node.y += (centerY - node.y) * 0.1;
 						}
@@ -328,7 +508,7 @@ class MyItemView extends ItemView {
 			.force('x', d3.forceX(width / 2).strength(this.centerForce))
 			.force('y', d3.forceY(height / 2).strength(this.centerForce))
 			.force('collide', d3.forceCollide().radius(DEFAULT_NETWORK_SETTINGS.nodeSize + 3).strength(0.7)) // Adjust radius based on node size
-			.force('customCenter', customCenterForce2(this.centralNodeId, width / 2, height / 2)) // Add custom centering force
+			.force('customCenter', customCenterForce2(width / 2, height / 2)) // Add custom centering force
 			// TODO:: Keep here for a while just in case
 			// .velocityDecay(0.4) // Increased damping factor for smoother transitions
 			// .alphaDecay(0.15) // Increased alpha decay for faster cooling down
@@ -367,9 +547,7 @@ class MyItemView extends ItemView {
 					.on('end', (event, d: any) => {
 						if (!event.active) simulation.alphaTarget(0);
 					}));
-	
-			let nodeSelection: any, linkSelection: any, labelSelection: any, validatedLinks: any;
-	
+		
 			let nodeLabels = svgGroup.append('g')
 				.attr('class', 'labels')
 				.selectAll('text')
@@ -449,6 +627,16 @@ class MyItemView extends ItemView {
 			// Function to rerender visualization with most up to date settings
 			const updateVisualization = (newScoreThreshold?: number) => {
 
+				if (this.updatingVisualization) {
+					console.log('Update already in progress. Skipping...');
+					return;
+				} else {
+
+					console.log('Update not in progress . Skipping...');
+
+				}
+				console.log('updating');
+
 				if (newScoreThreshold !== undefined) {
 					this.significanceScoreThreshold = newScoreThreshold;
 				}
@@ -478,7 +666,7 @@ class MyItemView extends ItemView {
 		
 				console.log('Visible Nodes:', nodesData);
 		
-				validatedLinks = filteredConnections.filter((link) => {
+				this.validatedLinks = filteredConnections.filter((link) => {
 					const sourceNode = nodesData.find(node => node.id === link.source);
 					const targetNode = nodesData.find(node => node.id === link.target);
 		
@@ -489,25 +677,17 @@ class MyItemView extends ItemView {
 					return true;
 				});
 		
-				console.log('Validated Links:', validatedLinks);
-		
-				// Update nodeLinkCount
-				this.nodeLinkCount = {};
-				validatedLinks.forEach((link : any) => {
-					this.nodeLinkCount[link.source] = (this.nodeLinkCount[link.source] || 0) + 1;
-					this.nodeLinkCount[link.target] = (this.nodeLinkCount[link.target] || 0) + 1;
-				});
+				console.log('Validated Links:', this.validatedLinks);
 	
 				// Safeguard to prevent infinite loop
-				if (nodesData.length === 0 || validatedLinks.length === 0) {
+				if (nodesData.length === 0 || this.validatedLinks.length === 0) {
 					console.warn('No nodes or links to display after filtering. Aborting update.');
 					return;
 				}		
-	
-				// Determine the main node (the node with the highest link count)
-				this.centralNodeId = Object.keys(this.nodeLinkCount).reduce((a, b) => this.nodeLinkCount[a] > this.nodeLinkCount[b] ? a : b);
-				const mainNodeSize = maxNodeSize;
-				const otherNodeSize = minNodeSize;
+				
+				//TODO:: For now, separate central node and other node sizes until we do a node size by feature
+				const mainNodeSize = this.maxNodeSize;
+				const otherNodeSize = this.minNodeSize;
 	
 				// Move forces towards central node
 				if (this.centralNode) {
@@ -519,19 +699,20 @@ class MyItemView extends ItemView {
 				const updateForces = () => {
 					simulation.alpha(0.3).restart(); // Restart the simulation with initial alpha
 					setTimeout(() => {
+						this.updatingVisualization = false; // Reset the flag after stopping simulation
 						simulation.alphaTarget(0).stop(); // Stop the simulation after 2 seconds
 					}, 2000); 
 				};
 		
-				nodeSelection = svgGroup.select('g.nodes').selectAll('circle')
+				this.nodeSelection = svgGroup.select('g.nodes').selectAll('circle')
 					.data(nodesData, (d: any) => d.id)
 					.join(
 						enter => enter.append('circle')
 							.attr('class', 'node')
-							.attr('r', d => d.id === this.centralNodeId ? this.nodeSize + 2 : this.nodeSize)
-							.attr('fill', d => d.group === 'note' ? '#7c8594' : '#926ec9')
-							.attr('stroke', d => d.group === 'note' ? '#7c8594' : '#926ec9')
-							.attr('stroke-width', 0.3)
+							.attr('r', d => d.id === this.centralNode.id ? this.nodeSize + 2 : this.nodeSize)
+							.attr('fill', d => d.selected ? '#f3ee5d' : (d.group === 'note' ? '#7c8594' : '#926ec9'))
+							.attr('stroke', d => d.selected ? '#ff0' : (d.group === 'note' ? '#7c8594' : '#926ec9'))
+							.attr('stroke-width', d => d.selected ? 2 : 0.3)
 							.attr('opacity', 1)
 							.attr('cursor', 'pointer')
 							.call(d3.drag()
@@ -548,21 +729,32 @@ class MyItemView extends ItemView {
 									if (!event.active) simulation.alphaTarget(0);
 								})
 							)
-							.on('mouseover', function(event, d: any) {
-
-								if (d.id !== that.centralNodeId) {
-									d3.select(this).transition().duration(500).attr('fill', '#d46ebe'); // Animate fill color to #d46ebe
-								}
-
-								d3.select(this).attr('stroke', '#fff'); // Change stroke color to white on hover
-
-								highlightNode(d);
-
-								svgGroup.select(`text[data-id='${d.id}']`).transition().duration(250).attr('y', d.y + 4); // Animate label down 10 pixels
-								
+							.on('click', function(event, d: any) {
+								console.log('select clicking');
+								if (!that.isCtrlPressed) {
+									console.log('select clear');
+									that.clearSelections();
+								} 
+								d.selected = !d.selected;
+								console.log('selecting: ', d.selected)
+								that.updateNodeAppearance();
 								event.stopPropagation();
+							})
+							.on('mouseover', function(event, d: any) {
 								that.isHovering = true;
-	
+
+								if (!d.selected) {
+									if (d.id !== that.centralNode.id && !d.highlighted) {
+										d3.select(this).transition().duration(500).attr('fill', '#d46ebe'); // Animate fill color to #d46ebe
+									}
+									that.highlightNode(d);
+								}
+							
+								d3.select(this).attr('stroke', '#fff'); // Change stroke color to white on hover
+								svgGroup.select(`text[data-id='${d.id}']`).transition().duration(250).attr('y', d.y + 4); // Animate label down 10 pixels
+							
+								event.stopPropagation();
+							
 								that.app.workspace.trigger("hover-link", {
 									event,
 									source: 'D3',
@@ -570,27 +762,29 @@ class MyItemView extends ItemView {
 									targetEl: this,
 									linktext: d.id,
 								});
-							})
-							.on('mouseout', function(event, d: any) {
-								if (d.id !== that.centralNodeId) {
-									d3.select(this).transition().duration(500).attr('fill', '#926ec9'); // Animate fill color back to #926ec9
-								}
-								d3.select(this).attr('stroke', 'transparent'); // Change stroke color back to less visible on mouse out
-								unhighlightNode();
-								svgGroup.select(`text[data-id='${d.id}']`).transition().duration(250).attr('y', d.y); // Animate label back up 10 pixels
+							}).on('mouseout', function(event, d: any) {
 								that.isHovering = false;
+								if (!d.selected) {
+									if (d.id !== that.centralNode.id) {
+										d3.select(this).transition().duration(500).attr('fill', d.group === 'note' ? '#7c8594' : '#926ec9'); // Animate fill color back to original
+									}
+								}
+								that.unhighlightNode();
+								d3.select(this).attr('stroke', d.selected ? '#ff0' : 'transparent'); // Change stroke color back to less visible on mouse out
+								svgGroup.select(`text[data-id='${d.id}']`).transition().duration(250).attr('y', d.y); // Animate label back up 10 pixels
 							}),
 						update => update
-							.attr('r', d => d.id === this.centralNodeId ? mainNodeSize : otherNodeSize)
-							.attr('fill', d => d.group === 'note' ? '#7c8594' : '#926ec9')
-							.attr('stroke', d => d.group === 'note' ? '#7c8594' : '#926ec9')
-							.attr('opacity', 1)
-							.attr('stroke-width', 0.3),
+							.attr('r', d => d.id === this.centralNode.id ? this.nodeSize + 2 : this.nodeSize)
+							.attr('fill', d => d.selected ? '#f3ee5d' : (d.group === 'note' ? '#7c8594' : '#926ec9'))
+							.attr('stroke', d => d.selected ? '#ff0' : (d.group === 'note' ? '#7c8594' : '#926ec9'))
+							.attr('stroke-width', d => d.selected ? 2 : 0.3),
 						exit => exit.remove()
 					);
+
+
 	
-				linkSelection = svgGroup.select('g.links').selectAll('line')
-					.data(validatedLinks, (d: any) => `${d.source}-${d.target}`)
+				this.linkSelection = svgGroup.select('g.links').selectAll('line')
+					.data(this.validatedLinks, (d: any) => `${d.source}-${d.target}`)
 					.join(
 						enter => enter.append('line')
 							.attr('class', 'link')
@@ -625,7 +819,7 @@ class MyItemView extends ItemView {
 						exit => exit.remove()
 					);
 	
-				labelSelection = svgGroup.select('g.labels').selectAll('text')
+				this.labelSelection = svgGroup.select('g.labels').selectAll('text')
 					.data(nodesData, (d: any) => d.id)
 					.join(
 						enter => enter.append('text')
@@ -651,9 +845,10 @@ class MyItemView extends ItemView {
 					.attr('y', (d: any) => d.y);
 	
 				simulation.nodes(nodesData);
-				(simulation.force('link') as any).links(validatedLinks);
+				(simulation.force('link') as any).links(this.validatedLinks);
 	
 				simulation.alpha(0.3).alphaTarget(0.05).restart();
+				
 	
 				centerNetwork();
 	
@@ -663,11 +858,11 @@ class MyItemView extends ItemView {
 	
 					customCenterForce(0.1)	
 	
-					nodeSelection
+					this.nodeSelection
 						.attr('cx', (d: any) => d.x)
 						.attr('cy', (d: any) => d.y);
 	
-					linkSelection
+					this.linkSelection
 						.attr('x1', (d: any) => d.source.x)
 						.attr('y1', (d: any) => d.source.y)
 						.attr('x2', (d: any) => d.target.x)
@@ -695,27 +890,8 @@ class MyItemView extends ItemView {
 						// Update label opacity based on initial zoom level
 						updateLabelOpacity(d3.zoomTransform(svg.node() as Element).k);
 				});
-	
-	
-				const highlightNode = (node: any) => {
-					nodeSelection.transition().duration(500)
-						.attr('fill', (d: any) => (d.id !== this.centralNodeId && (d.id === node.id || validatedLinks.some((link: any) => (link.source === node && link.target === d) || (link.target === node && link.source === d)))) ? '#d46ebe' : (d.id === this.centralNodeId ? '#7c8594' : '#926ec9'))
-						.attr('opacity', (d: any) => (d.id === node.id || validatedLinks.some((link: any) => (link.source === node && link.target === d) || (link.target === node && link.source === d))) ? 1 : 0.1);
-	
-					linkSelection.transition().duration(500)
-						.attr('opacity', (d: any) => (d.source === node || d.target === node) ? 1 : 0.1);
-	
-					labelSelection.transition().duration(500)
-						.attr('opacity', (d: any) => (d.id === node.id || validatedLinks.some((link: any) => (link.source === node && link.target === d) || (link.target === node && link.source === d))) ? 1 : 0.1);
-				};
-	
-				const unhighlightNode = () => {
-					nodeSelection.transition().duration(500)
-						.attr('fill', (d: any) => (d.id !== this.centralNodeId ? '#926ec9' : '#7b8493'))
-						.attr('opacity', 1);
-					linkSelection.transition().duration(500).attr('opacity', 1);
-					labelSelection.transition().duration(500).attr('opacity', 1);
-				};
+
+				this.updatingVisualization = true; // Set the flag to true
 	
 			
 			};
@@ -1003,14 +1179,14 @@ class MyItemView extends ItemView {
 						.domain([this.minScore, this.maxScore]) // Update this to match your score range
 						.range([this.minLinkThickness, this.maxLinkThickness]);
 				
-					linkSelection.attr('stroke-width', (d: any) => linkStrokeScale(d.score));
+					this.linkSelection.attr('stroke-width', (d: any) => linkStrokeScale(d.score));
 				};
 				
 	
 				// Function to update link force based on the slider value
 				const updateLinkForce = (newLinkForce: number) => {
 					simulation.force('link', null); // Remove the existing link force
-					simulation.force('link', d3.forceLink(validatedLinks).id((d: any) => d.id).strength(newLinkForce).distance(this.linkDistance)); // Add the new link force
+					simulation.force('link', d3.forceLink(this.validatedLinks).id((d: any) => d.id).strength(newLinkForce).distance(this.linkDistance)); // Add the new link force
 					simulation.alphaTarget(0.3).restart(); // Smoothly adjust without a full restart
 					updateForces();
 	
@@ -1019,7 +1195,7 @@ class MyItemView extends ItemView {
 				// Function to update link distance based on the slider value
 				const updateLinkDistance = (newLinkDistance: number) => {
 					simulation.force('link', null); // Remove the existing link force
-					simulation.force('link', d3.forceLink(validatedLinks).id((d: any) => d.id).distance(newLinkDistance).strength(this.linkForce)); // Add the new link force with the current distance
+					simulation.force('link', d3.forceLink(this.validatedLinks).id((d: any) => d.id).distance(newLinkDistance).strength(this.linkForce)); // Add the new link force with the current distance
 					simulation.alphaTarget(0.3).restart(); // Smoothly adjust without a full restart
 					updateForces();
 	
@@ -1035,7 +1211,7 @@ class MyItemView extends ItemView {
 				
 				// Function to update node sizes based on the slider value
 				const updateNodeSizes = () => {
-					nodeSelection.attr('r', (d: any) => d.id === this.centralNodeId ? this.nodeSize + 3 : this.nodeSize);
+					this.nodeSelection.attr('r', (d: any) => d.id === this.centralNode.id ? this.nodeSize + 3 : this.nodeSize);
 				};
 				
 				// Function to debounce calls to updateVisualization
@@ -1062,7 +1238,7 @@ class MyItemView extends ItemView {
 					const debouncedUpdateVisualization = debounce((event: Event) => {
 						const newScoreThreshold = parseFloat((event.target as HTMLInputElement).value);
 						updateVisualization(newScoreThreshold);
-					}, 300); // Adjust the delay (300ms) as needed
+					}, 500); // Adjust the delay (500ms) as needed
 	
 					scoreThresholdSlider.addEventListener('input', debouncedUpdateVisualization);
 	
@@ -1112,6 +1288,24 @@ class MyItemView extends ItemView {
 						resetToDefault();
 					});
 				}
+
+				// Listen for control key press
+				document.addEventListener('keydown', (event) => {
+					if (event.key === 'Control') {
+						this.isCtrlPressed = true;
+						svg.style('cursor', 'crosshair');
+
+					}
+				});
+				
+				document.addEventListener('keyup', (event) => {
+					if (event.key === 'Control') {
+						this.isCtrlPressed = false;
+						svg.style('cursor', 'default');
+
+					}
+				});
+				
 	
 				// Function to reset all variables to default using the global default constant
 				const resetToDefault = () => {
@@ -1167,10 +1361,12 @@ class MyItemView extends ItemView {
 	
 			// Watch for changes in the currently viewed note
 			this.app.workspace.on('file-open', (file) => {
-				if (file && this.currentNoteKey !== file.path && !this.isHovering) {
-					this.currentNoteKey = file.path;
-					console.log('Current Note Key:', this.currentNoteKey);
-					updateVisualization();
+				if (file && (this.currentNoteKey !== file.path) && !this.isHovering) {
+					// if (!this.updatingVisualization) {
+						this.currentNoteKey = file.path;
+						console.log('Current Note Key:', this.currentNoteKey);
+						updateVisualization();
+					// }
 				}
 			});
 		
