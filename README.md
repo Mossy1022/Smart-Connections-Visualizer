@@ -64,6 +64,17 @@ Special thanks to Brian, the developer behind [Smart Connections](https://github
 
 The Smart Connections Visualization Plugin is open-source and available under the MIT License. Contributions are welcome!
 
+## About Me
+
+Hi! Name's Evan Moscoso, and right now I'm a senior software developer/architect consultant for General Dynamics, contracted out to the CDC to manage and develop data visualization tools.  I've been obsessed about what's transpiring with AI for the last 15 years, knowing that it would soon change the world like this.  The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information and use logic with it.  We need to visualize in order to save state and keep progressing in complex problems.  I can hear the music.. and I want nothing more to improve how we communicate and make better decisions.  
+
+Inspired by Brian (creator of Smart Connections), I started an AI consulting company "Evan's Oasis" where I audit business workflows of clients and suggest AI tools and practices to significantly increase decision making, productivity, and quality– all while cutting down on time and money needed to run a business.  
+
+I've continuosly been giving webinars to both CDC and GDIT on the most significant AI updates, as well as in-person local community seminars around the Tampa Bay area. 
+One of my life's main questlines is to inspire people to take advantage of the outragous new abilities we have with AI and how we can use them to help us in our every day lives.
+
+I'd really like to go all in on my AI consulting company and continue development on this :)
+
 ---
 
 Feel free to reach out with any questions or suggestions. We hope this plugin enhances your note-taking experience and helps you uncover new insights and connections within your notes. Happy visualizing!
