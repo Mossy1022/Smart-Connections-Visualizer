@@ -6,19 +6,21 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
-.node {
-    stroke-width: 0.2px;
-}
+
 .link {
     stroke: #4c7787;
     stroke-opacity: 1;
     cursor: pointer;
 }
 .label {
-    font: 6px sans-serif;
     pointer-events: none;
     fill: #bbb;
     text-shadow: 0px 0px 2px black;
+    font-family: 'Cascadia';
+}
+.link-label {
+    font-family: 'Cascadia';
+    font-size: 7px;
 }
 .node:hover {
     stroke: #fff;
@@ -35,6 +37,7 @@ If your plugin does not need CSS, delete this file.
     z-index: 999; /* Ensure the icon stays above other elements */
 }
 .dropdown-menu {
+    font-family: 'Cascadia';
     display: none;
     position: absolute;
     top: 13px; /* Position on top of the settings icon */
@@ -43,7 +46,7 @@ If your plugin does not need CSS, delete this file.
     border: 1px solid #444;
     border-radius: 5px;
     padding: 10px;
-    width: 250px;
+    width: 300px;
     z-index: 1000; /* Ensure the menu stays above other elements */
 }
 .dropdown-menu.open {
@@ -53,6 +56,7 @@ If your plugin does not need CSS, delete this file.
     display: flex;
     justify-content: flex-end;
     margin-bottom: 5px;
+    font-family: sans-serif;
 }
 .menu-header .icon {
     cursor: pointer;
@@ -76,8 +80,13 @@ If your plugin does not need CSS, delete this file.
     margin-bottom: 8px;
 }
 
-#scoreThresholdLabel {
+#score-threshold-label {
     text-wrap: nowrap;
+}
+
+#refresh-icon {
+    font-size: 22px;
+    margin-top: -6px;
 }
 
 .accordion-header {

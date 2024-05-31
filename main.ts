@@ -34,7 +34,7 @@ class MyItemView extends ItemView {
 	centralNode: any;
 	connectionType = 'block';
     isHovering: boolean; // Add a flag to track hover state
-	significanceScoreThreshold = 0.8;
+	relevanceScoreThreshold = 0.8;
 	settingsInstantiated = false;
 	nodeSize = 3;
 	linkThickness = 0.3;
@@ -51,6 +51,7 @@ class MyItemView extends ItemView {
 	maxLinkThickness = 4;
 	nodeSelection : any;
 	linkSelection : any;
+	linkLabelSelection : any;
 	labelSelection : any;
 	updatingVisualization: boolean; // Add this flag
 	isCtrlPressed = false;
@@ -59,6 +60,9 @@ class MyItemView extends ItemView {
 	isChangingConnectionType = true;
     selectionBox: any;
 	validatedLinks : any;
+	maxLabelCharacters = 18; // Add max label characters property
+	linkLabelSize = 7; // Add link label size property
+	nodeLabelSize = 7; // Add node label size property
 	
 	// selection box origin point
 	startX = 0;
@@ -68,7 +72,6 @@ class MyItemView extends ItemView {
         super(leaf);
 		this.currentNoteKey = '';
 		this.isHovering = false; 
-
     }
 
     getViewType(): string {
@@ -89,27 +92,22 @@ class MyItemView extends ItemView {
 			.attr('fill', (d: any) => {
 				if (d.id === this.centralNode.id) {
 					return '#7c8594';
-				} else if (d.selected) {
-					console.log('selected appearance');
-					return '#f3ee5d';
-				} else if (d.highlighted) {
+				} else if (d.highlighted && !d.selected) {
 					return '#d46ebe';
 				} else {
 					return d.group === 'note' ? '#7c8594' : '#926ec9';
 				}
 			})
-			.attr('stroke', (d: any) => d.selected ? '#ff0' : 'transparent')
-			.attr('stroke-width', (d: any) => d.selected ? 2 : 0.3)
+			.attr('stroke', (d: any) => d.selected ? 'blanchedalmond' : 'transparent')
+			.attr('stroke-width', (d: any) => { (d.selected && !this.isHovering) ? 1.5: 0.3 })
 			.attr('opacity', (d: any) => {
 				if (d.id === this.centralNode.id) {
 					return 1;
-				} else if (d.selected || d.highlighted) {
+				} else if (d.highlighted) {
 					return 1;
 				} else if (this.isHovering) {
-					console.log('opacity low');
 					return 0.1;
 				} else {
-					console.log('opacity up');
 					return 1;
 				}
 			});
@@ -146,22 +144,57 @@ class MyItemView extends ItemView {
 		this.labelSelection.transition().duration(500)
 			.attr('opacity', (d: any) =>
 				(d.id === node.id || this.validatedLinks.some((link: any) =>
-					(link.source.id === node.id && link.target.id === d.id) ||
-					(link.target.id === node.id && link.source.id === d.id))) ? 1 : 0.1);
+					(link.source.id === node.id && link.target.id === d.id))) ? 1 : 0.1)
+			.text((d: any) => {
+				console.log('d: ', d.id === node.id);
+				return d.id === node.id ? this.formatLabel(d.name, false) : this.formatLabel(d.name, true);
+			}); // Show full label only for the highlighted node	
+	
+		this.linkLabelSelection.transition().duration(500)
+			.attr('opacity', (d: any) => (d.source.id === node.id || d.target.id === node.id) ? 1 : 0);
 	}
+	
 	
 	
 	unhighlightNode() {
 		this.nodeSelection.each((d: any) => {
-			if (d.id !== this.centralNode.id && !d.selected) {
-				d.highlighted = false;
-			}
+			if (d.id !== this.centralNode.id) {
+            	d.highlighted = false;
+        	}
 		});
 		this.updateNodeAppearance();
 	
 		this.linkSelection.transition().duration(500).attr('opacity', 1);
-		this.labelSelection.transition().duration(500).attr('opacity', 1);
+		this.labelSelection.transition().duration(500).attr('opacity', 1)
+        .text((d: any) => this.formatLabel(d.name, true)); // Revert to truncated label
+		this.linkLabelSelection.transition().duration(500).attr('opacity', 0);
+		
 	}
+
+	// Helper function to truncate labels, extract filenames or parts after hashtags, and remove brackets
+	formatLabel(path: string, truncate: boolean = true) {
+		console.log('formatting: ', truncate);
+		if (truncate) {
+			if (path.includes('#')) {
+				const parts = path.split('#');
+				path = parts[parts.length - 1]; // Take the last part after splitting by '#'
+				const cleanedPath = path.replace(/[\[\]]/g, ''); // Remove brackets
+				return cleanedPath.length > this.maxLabelCharacters ? cleanedPath.slice(0, this.maxLabelCharacters) + '...' : cleanedPath;
+			} else {
+				const filename = path.split('/').pop();
+				if (filename) {
+					const cleanedFilename = filename.replace(/[\[\]]/g, ''); // Remove brackets
+					return cleanedFilename.length > this.maxLabelCharacters ? cleanedFilename.slice(0, this.maxLabelCharacters) + '...' : cleanedFilename;
+				}
+			}
+		} else {
+			const parts = path.split('#');
+				path = parts[parts.length - 1]; // Take the last part after splitting by '#'
+				const cleanedPath = path.replace(/[\[\]]/g, ''); // Remove brac
+			return cleanedPath; // Remove brackets without truncating
+		}
+		return '';
+	};
 	
 	
 
@@ -225,7 +258,7 @@ class MyItemView extends ItemView {
 		
 				this.centralNote = smartNotes[this.currentNoteKey];
 				const noteConnections = this.centralNote.find_connections().filter(
-					(connection: any) => connection.score >= this.significanceScoreThreshold); 
+					(connection: any) => connection.score >= this.relevanceScoreThreshold); 
 
 				console.log('central note: ', this.centralNote);
 				console.log('note connections: ', this.centralNote.find_connections());
@@ -516,29 +549,7 @@ class MyItemView extends ItemView {
 					.attr('opacity', newOpacity);
 			};
 			
-	
-			//TODO:: Refactor this
-			// Define a custom center force to center the main node
-			const customCenterForce = (alpha: number) => {
-				if (that.centralNode) {
-					that.centralNode.x += (width / 2 - that.centralNode.x) * this.centerForce * alpha;
-					that.centralNode.y += (height / 2 - that.centralNode.y) * this.centerForce * alpha;
-				}
-			};
-	
-			// Function to create a custom center force for the main node
-			const customCenterForce2 = (centerX: number, centerY: number) => {
-				return () => {
-					nodes.forEach((node: any) => {
-						if (node.id === this.centralNode.id) {
-							node.x += (centerX - node.x) * 0.1;
-							node.y += (centerY - node.y) * 0.1;
-						}
-					});
-				};
-			};
-			
-			// Function to normalize significance score and inverse it to have links with higher scores closer to the central node
+			// Function to normalize relevance score and inverse it to have links with higher scores closer to the central node
 			function inverseNormalize(value : number) {
 				return 1 - ((value - that.minScore) / (that.maxScore - that.minScore));
 			}		
@@ -547,16 +558,7 @@ class MyItemView extends ItemView {
 			.force('center', null) // Remove the default center force
 			.force('charge', d3.forceManyBody().strength(-DEFAULT_NETWORK_SETTINGS.repelForce)) // Note the negative value for repulsion
 			.force('link', d3.forceLink().id((d: any) => d.id).distance((d: any) => 50 + (inverseNormalize(d.score) * 100)).strength(1))
-			.force('x', d3.forceX(width / 2).strength(this.centerForce))
-			.force('y', d3.forceY(height / 2).strength(this.centerForce))
 			.force('collide', d3.forceCollide().radius(DEFAULT_NETWORK_SETTINGS.nodeSize + 3).strength(0.7)) // Adjust radius based on node size
-			.force('customCenter', customCenterForce2(width / 2, height / 2)) // Add custom centering force
-			// TODO:: Keep here for a while just in case
-			// .velocityDecay(0.4) // Increased damping factor for smoother transitions
-			// .alphaDecay(0.15) // Increased alpha decay for faster cooling down
-			// .alphaMin(0.02) // Lower minimum alpha value before stopping
-			// .alpha(0.3) // Initial alpha value
-			// .alphaTarget(0); // Target alpha value to reach zero and stabilize
 		
 			updateConnections();
 		
@@ -610,25 +612,26 @@ class MyItemView extends ItemView {
 				.style('border', '1px solid #444') // Updated border color
 				.style('border-radius', '5px');
 	
+			// TODO:: Uncomment back in when want to start on tooltop func for link
 			// Add tooltip event listeners to links
-			link.on('mouseover', function(event, d) {
+			// link.on('mouseover', function(event, d) {
 
-				tooltip.text(`Significance: ${d.scoretoFixed(3)}`)
-			.style('visibility', 'visible');
+			// 	tooltip.text(`relevance: ${d.scoretoFixed(3)}`)
+			// .style('visibility', 'visible');
 				
-			}).on('mousemove', function(event) {
+			// }).on('mousemove', function(event) {
 
-				const [x, y] = d3.pointer(event);
-				tooltip.style('top', `${y + 10}px`)
-					.style('left', `${x + 10}px`);
+			// 	const [x, y] = d3.pointer(event);
+			// 	tooltip.style('top', `${y + 10}px`)
+			// 		.style('left', `${x + 10}px`);
 
-			}).on('mouseout', function() {
+			// }).on('mouseout', function() {
 
-				tooltip.style('visibility', 'hidden');
+			// 	tooltip.style('visibility', 'hidden');
 
-			});
+			// });
 			
-			// TODO:: Uncomment back in when want to start on tooltop func
+			// TODO:: Uncomment back in when want to start on tooltop func for node
 			// node.on('mouseover', function(event, d: any) {
 			// 	tooltip.text(d.name)
 			// 		.style('visibility', 'visible');
@@ -648,24 +651,8 @@ class MyItemView extends ItemView {
 					.restart();
 			};
 	
-			// Helper function to truncate labels, extract filenames or parts after hashtags, and remove brackets
-			const formatLabel = (path: string, maxLength: number = 18) => {
-				if (path.includes('#')) {
-					const parts = path.split('#');
-					path = parts[parts.length - 1]; // Take the last part after splitting by '#'
-					const cleanedPath = path.replace(/[\[\]]/g, ''); // Remove brackets
-					return cleanedPath.length > maxLength ? cleanedPath.slice(0, maxLength) + '...' : cleanedPath;
-				} else {
-					const filename = path.split('/').pop();
-					if (filename) {
-						const cleanedFilename = filename.replace(/[\[\]]/g, ''); // Remove brackets
-						return cleanedFilename.length > maxLength ? cleanedFilename.slice(0, maxLength) + '...' : cleanedFilename;
-					}
-				}
-				
-				return '';
-			};
 			
+
 			// Function to rerender visualization with most up to date settings
 			const updateVisualization = (newScoreThreshold?: number) => {
 
@@ -682,13 +669,13 @@ class MyItemView extends ItemView {
 				this.isChangingConnectionType = false;
 
 				if (newScoreThreshold !== undefined) {
-					this.significanceScoreThreshold = newScoreThreshold;
+					this.relevanceScoreThreshold = newScoreThreshold;
 				}
 	
 				updateConnections();
 		
 				// console.log('Connections before filtering:', connections);
-				const filteredConnections = connections.filter((connection: any) => connection.score >= this.significanceScoreThreshold);
+				const filteredConnections = connections.filter((connection: any) => connection.score >= this.relevanceScoreThreshold);
 				// console.log('Filtered Connections:', filteredConnections);
 		
 				let visibleNodes = new Set<string>();
@@ -752,107 +739,107 @@ class MyItemView extends ItemView {
 					.data(nodesData, (d: any) => d.id)
 					.join(
 						enter => enter.append('circle')
-							.attr('class', 'node')
-							.attr('r', d => d.id === this.centralNode.id ? this.nodeSize + 2 : this.nodeSize)
-							.attr('fill', d => d.selected ? '#f3ee5d' : (d.group === 'note' ? '#7c8594' : '#926ec9'))
-							.attr('stroke', d => d.selected ? '#ff0' : (d.group === 'note' ? '#7c8594' : '#926ec9'))
-							.attr('stroke-width', d => d.selected ? 2 : 0.3)
-							.attr('opacity', 1)
-							.attr('cursor', 'grab')
-							.call(d3.drag()
-								.on('start', function(event, d: any) {
-									if (!event.active) simulation.alphaTarget(0.3).restart();
-									// Store initial positions of selected nodes
-									d.initialX = d.x;
-									d.initialY = d.y;
-									if (d.selected) {
-										that.nodeSelection.each((node: any) => {
-											if (node.selected) {
-												node.initialX = node.x;
-												node.initialY = node.y;
-											}
-										});
-									}
-								})
-								.on('drag', function(event, d: any) {
-									const dx = event.x - d.initialX;
-									const dy = event.y - d.initialY;
-									if (d.selected) {
-										that.nodeSelection.each((node: any) => {
-											if (node.selected) {
-												node.fx = node.initialX + dx;
-												node.fy = node.initialY + dy;
-											}
-										});
-									} else {
-										d.fx = event.x;
-										d.fy = event.y;
-									}
-								})
-								.on('end', function(event, d: any) {
-									if (!event.active) simulation.alphaTarget(0);
-									if (d.selected) {
-										that.nodeSelection.each((node: any) => {
-											if (node.selected) {
-												node.fx = null;
-												node.fy = null;
-											}
-										});
-									} else {
-										d.fx = null;
-										d.fy = null;
-									}
-								})
-							)
-							.on('click', function(event, d: any) {
-								event.stopPropagation();
-								if (!that.isAltPressed) {
-									that.clearSelections();
-								} 
-								d.selected = !d.selected;
-								console.log('selected: ', d.selected)
-								that.updateNodeAppearance();
+						.attr('class', 'node')
+						.attr('r', d => d.id === this.centralNode.id ? this.nodeSize + 2 : this.nodeSize)
+						.attr('fill', d => (d.group === 'note' ? '#7c8594' : '#926ec9'))
+						.attr('stroke', d => { return d.selected ? 'blanchedalmond' : 'transparent'})
+						.attr('stroke-width', d => d.selected ? 1.5 : 0.3)
+						.attr('opacity', 1)
+						.attr('cursor', 'grab')
+						.call(d3.drag()
+							.on('start', function(event, d: any) {
+								if (!event.active) simulation.alphaTarget(0.3).restart();
+								// Store initial positions of selected nodes
+								d.initialX = d.x;
+								d.initialY = d.y;
+								if (d.selected) {
+									that.nodeSelection.each((node: any) => {
+										if (node.selected) {
+											node.initialX = node.x;
+											node.initialY = node.y;
+										}
+									});
+								}
 							})
-							.on('mouseover', function(event, d: any) {
-								that.isHovering = true;
-								if (!d.selected) {
-									if (d.id !== that.centralNode.id && !d.highlighted) {
-										d3.select(this).transition().duration(500).attr('fill', '#d46ebe'); // Animate fill color to #d46ebe
-									} 
-									that.highlightNode(d);
+							.on('drag', function(event, d: any) {
+								const dx = event.x - d.initialX;
+								const dy = event.y - d.initialY;
+								if (d.selected) {
+									that.nodeSelection.each((node: any) => {
+										if (node.selected) {
+											node.fx = node.initialX + dx;
+											node.fy = node.initialY + dy;
+										}
+									});
+								} else {
+									d.fx = event.x;
+									d.fy = event.y;
 								}
-							
-								d3.select(this).attr('stroke', '#fff'); // Change stroke color to white on hover
-								svgGroup.select(`text[data-id='${d.id}']`).transition().duration(250).attr('y', d.y + 4); // Animate label down 10 pixels
-							
-								event.stopPropagation();
-							
-								that.app.workspace.trigger("hover-link", {
-									event,
-									source: 'D3',
-									hoverParent: this.parentElement,
-									targetEl: this,
-									linktext: d.id,
-								});
-							}).on('mouseout', function(event, d: any) {
-								that.isHovering = false;
-								if (!d.selected) {
-									if (d.id !== that.centralNode.id) {
-										d3.select(this).transition().duration(500).attr('fill', d.group === 'note' ? '#7c8594' : '#926ec9'); // Animate fill color back to original
-									}
+							})
+							.on('end', function(event, d: any) {
+								if (!event.active) simulation.alphaTarget(0);
+								if (d.selected) {
+									that.nodeSelection.each((node: any) => {
+										if (node.selected) {
+											node.fx = null;
+											node.fy = null;
+										}
+									});
+								} else {
+									d.fx = null;
+									d.fy = null;
 								}
-								that.unhighlightNode();
-								d3.select(this).attr('stroke', d.selected ? '#ff0' : 'transparent'); // Change stroke color back to less visible on mouse out
-								svgGroup.select(`text[data-id='${d.id}']`).transition().duration(250).attr('y', d.y); // Animate label back up 10 pixels
-							}),
+							})
+						)
+						.on('click', function(event : any, d: any) {
+							event.stopPropagation();
+							if (!that.isAltPressed) {
+								that.clearSelections();
+							}
+							d.selected = !d.selected;
+							that.updateNodeAppearance();
+						})
+						.on('mouseover', function(event : any, d: any) {
+							that.isHovering = true;
+							if (!d.selected) {
+								if (d.id !== that.centralNode.id && !d.highlighted) {
+									d3.select(this).transition().duration(500).attr('fill', '#d46ebe'); // Animate fill color to #d46ebe
+								}
+							}
+
+							that.highlightNode(d);
+					
+							d3.select(this).attr('stroke', d.selected ? 'blanchedalmond' : '#fff').attr('stroke-width', d.selected ? 1.5 : 0.3); // Change stroke color to white on hover
+							svgGroup.select(`text[data-id='${d.id}']`).transition().duration(250).attr('y', d.y + 4); // Animate label down 10 pixels
+					
+							event.stopPropagation();
+					
+							that.app.workspace.trigger("hover-link", {
+								event,
+								source: 'D3',
+								hoverParent: this.parentElement,
+								targetEl: this,
+								linktext: d.id,
+							});
+						}).on('mouseout', function(event : any, d: any) {
+							that.isHovering = false;
+							if (!d.selected) {
+								if (d.id !== that.centralNode.id) {
+									d3.select(this).transition().duration(500).attr('fill', d.group === 'note' ? '#7c8594' : '#926ec9'); // Animate fill color back to original
+								}
+							}
+							that.unhighlightNode();
+							console.log('selecting node', d.selected);
+							d3.select(this).attr('stroke', d.selected ? 'blanchedalmond' : 'transparent').attr('stroke-width', d.selected ? 1.5 : 0.3); // Change stroke color back to less visible on mouse out
+							svgGroup.select(`text[data-id='${d.id}']`).transition().duration(250).attr('y', d.y);
+						}),
 						update => update
 							.attr('r', d => d.id === this.centralNode.id ? this.nodeSize + 2 : this.nodeSize)
 							.attr('fill', d => d.selected ? '#f3ee5d' : (d.group === 'note' ? '#7c8594' : '#926ec9'))
-							.attr('stroke', d => d.selected ? '#ff0' : (d.group === 'note' ? '#7c8594' : '#926ec9'))
-							.attr('stroke-width', d => d.selected ? 2 : 0.3),
+							.attr('stroke', d => d.selected ? '#blanchedalmond' : (d.group === 'note' ? '#7c8594' : '#926ec9'))
+							.attr('stroke-width', d => d.selected ? 1.5 : 0.3),
 						exit => exit.remove()
 					);
-
 
 	
 				this.linkSelection = svgGroup.select('g.links').selectAll('line')
@@ -867,47 +854,63 @@ class MyItemView extends ItemView {
 							.attr('stroke-opacity', 1)
 							.attr('opacity', 1)
 							.on('mouseover', function(event, d : any) {
-								const [x, y] = d3.pointer(event);
-								tooltip.text(`Signficance: ${d.score.toFixed(3)}`)
-									.style('visibility', 'visible');
+								// Leacing here for when we use hover
+								// const [x, y] = d3.pointer(event);
+								// tooltip.text(`Signficance: ${d.score.toFixed(3)}`)
+								// 	.style('visibility', 'visible');
 							}).on('mousemove', function(event) {
-								const [x, y] = d3.pointer(event);
-								tooltip.style('top', `${y + 10}px`)
-									.style('left', `${x}px`);
+								// const [x, y] = d3.pointer(event);
+								// tooltip.style('top', `${y + 10}px`)
+								// 	.style('left', `${x}px`);
 							}).on('mouseout', function() {
-								tooltip.style('visibility', 'hidden');
+								// tooltip.style('visibility', 'hidden');
 							}),
 						update => update
 							.attr('stroke', '#4c7787')
 							.attr('stroke-width',(d: any) => d3.scaleLinear()
 							.domain([this.minScore, this.maxScore]) // Ensure this domain matches your score range
-							.range([this.minLinkThickness, this.maxLinkThickness])(d.score))
-							.on('mouseover', function(event, d : any) {
-							}).on('mousemove', function(event, d :any) {
-								// Calculate the position of the tooltip relative to the SVG coordinate system
-							}).on('mouseout', function() {
-								tooltip.style('visibility', 'hidden');
-							}), // Thinner stroke width
+							.range([this.minLinkThickness, this.maxLinkThickness])(d.score)),
+							// .on('mouseover', function(event, d : any) {
+							// }).on('mousemove', function(event, d :any) {
+							// 	// Calculate the position of the tooltip relative to the SVG coordinate system
+							// }).on('mouseout', function() {
+							// 	tooltip.style('visibility', 'hidden');
 						exit => exit.remove()
 					);
-	
+
+					this.linkLabelSelection = svgGroup.append('g')
+					.attr('class', 'link-labels')
+					.selectAll('text')
+					.data(this.validatedLinks, (d: any) => `${d.source.id}-${d.target.id}`)
+					.join(
+						enter => enter.append('text')
+							.attr('class', 'link-label')
+							.attr('font-size', this.linkLabelSize)
+							.attr('fill', '#bbb')
+							.attr('opacity', 0)
+							.text((d: any) => (d.score * 100).toFixed(1)),
+						update => update.text((d: any) => (d.score * 100).toFixed(1)),
+						exit => exit.remove()
+					);
+				
+		
 				this.labelSelection = svgGroup.select('g.labels').selectAll('text')
 					.data(nodesData, (d: any) => d.id)
 					.join(
 						enter => enter.append('text')
 							.attr('class', 'label')
 							.attr('dx', 0) // Centered horizontally
-							.attr('font-size', 4)
+							.attr('font-size', this.nodeLabelSize)
 							.attr('dy', 12) // Positioned right underneath
 							.attr('text-anchor', 'middle') // Center align text
 							.attr('fill', '#bbb')
 							.attr('opacity', 1) // Set initial opacity
-							.text((d: any) => formatLabel(d.name)),
+							.text((d: any) => this.formatLabel(d.name)),
 						update => update
 							.attr('dx', 0) // Centered horizontally
 							.attr('dy', 12) // Positioned right underneath
 							.attr('text-anchor', 'middle') // Center align text
-							.text((d: any) => formatLabel(d.name))
+							.text((d: any) => this.formatLabel(d.name))
 							.attr('fill', '#bbb')
 							.attr('font-size', 4)
 							.attr('opacity', 1), // Ensure updated opacity is 1
@@ -920,16 +923,11 @@ class MyItemView extends ItemView {
 				(simulation.force('link') as any).links(this.validatedLinks);
 	
 				simulation.alpha(0.3).alphaTarget(0.05).restart();
-				
-	
-				centerNetwork();
-	
+
 				updateForces();
-				
+
 				simulation.on('tick', () => {
-	
-					customCenterForce(0.1)	
-	
+		
 					this.nodeSelection
 						.attr('cx', (d: any) => d.x)
 						.attr('cy', (d: any) => d.y);
@@ -939,6 +937,10 @@ class MyItemView extends ItemView {
 						.attr('y1', (d: any) => d.source.y)
 						.attr('x2', (d: any) => d.target.x)
 						.attr('y2', (d: any) => d.target.y);
+
+					this.linkLabelSelection
+					.attr('x', (d: any) => (d.source.x + d.target.x) / 2)
+					.attr('y', (d: any) => (d.source.y + d.target.y) / 2); // Position at the midpoint of the link				
 	
 					svgGroup.select('g.labels').selectAll('text')
 						.data(nodesData, (d: any) => d.id)
@@ -948,12 +950,12 @@ class MyItemView extends ItemView {
 								.attr('dx', 12)
 								.attr('dy', '.35em')
 								.attr('fill', '#bbb')
-								.attr('data-id', d => d.id) // Add data-id attribute for easier selection
-								.text((d: any) => formatLabel(d.name)),
+								.attr('data-id', d => d.id)
+								.text((d: any) => this.formatLabel(d.name, true)), // Set initial label with truncation
 							update => update
-								.text((d: any) => formatLabel(d.name))
+								.text((d: any) => this.formatLabel(d.name, true)) // Ensure updated label is truncated
 								.attr('fill', '#bbb')
-								.attr('data-id', d => d.id), // Add data-id attribute for easier selection
+								.attr('data-id', d => d.id),
 							exit => exit.remove()
 						)
 						.attr('x', (d: any) => d.x)
@@ -1011,8 +1013,8 @@ class MyItemView extends ItemView {
 						</div>			
 						<div class="accordion-content">
 							<div class="slider-container">
-								<label id="scoreThresholdLabel" for="scoreThreshold">Signficance Threshold: ${this.significanceScoreThreshold}</label>
-								<input type="range" id="scoreThreshold" class="slider" name="scoreThreshold" min="0" max="0.99" value="${this.significanceScoreThreshold}" step="0.01">
+								<label id="scoreThresholdLabel" for="scoreThreshold">Min Relevance: ${this.relevanceScoreThreshold * 100}</label>
+								<input type="range" id="scoreThreshold" class="slider" name="scoreThreshold" min="0" max="0.99" value="${this.relevanceScoreThreshold}" step="0.01">
 							</div>
 							<label class="settings-item-content-label">Connection Type:</label>
 							<div class="radio-container">
@@ -1050,6 +1052,18 @@ class MyItemView extends ItemView {
 							<div class="slider-container">
 								<label id="nodeSizeLabel" for="nodeSize">Node Size: ${this.nodeSize}</label>
 								<input type="range" id="nodeSize" class="slider" name="nodeSize" min="1" max="15" value="${this.nodeSize}" step="0.01">
+							</div>
+							<div class="slider-container">
+								<label id="maxLabelCharactersLabel" for="maxLabelCharacters">Max Label Characters: ${this.maxLabelCharacters}</label>
+								<input type="range" id="maxLabelCharacters" class="slider" name="maxLabelCharacters" min="1" max="50" value="${this.maxLabelCharacters}" step="1">
+							</div>
+							<div class="slider-container">
+								<label id="linkLabelSizeLabel" for="linkLabelSize">Link Label Size: ${this.linkLabelSize}</label>
+								<input type="range" id="linkLabelSize" class="slider" name="linkLabelSize" min="1" max="15" value="${this.linkLabelSize}" step="0.01">
+							</div>
+							<div class="slider-container">
+								<label id="nodeLabelSizeLabel" for="nodeLabelSize">Node Label Size: ${this.nodeLabelSize}</label>
+								<input type="range" id="nodeLabelSize" class="slider" name="nodeLabelSize" min="1" max="26" value="${this.nodeLabelSize}" step="1">
 							</div>
 							<div class="slider-container">
 								<label id="minLinkThicknessLabel" for="minLinkThickness">Min Link Thickness: ${this.minLinkThickness}</label>
@@ -1115,7 +1129,7 @@ class MyItemView extends ItemView {
 	
 				// Now query the DOM for the slider and label
 				const scoreThresholdSlider = document.getElementById('scoreThreshold') as HTMLInputElement;
-				const scoreThresholdLabel = document.getElementById('scoreThresholdLabel');
+				const scoreThresholdLabel = document.getElementById('score-threshold-label');
 				const nodeSizeSlider = document.getElementById('nodeSize') as HTMLInputElement;
 				const nodeSizeLabel = document.getElementById('nodeSizeLabel');
 				const lineThicknessSlider = document.getElementById('lineThickness') as HTMLInputElement;
@@ -1135,6 +1149,46 @@ class MyItemView extends ItemView {
 				const maxLinkThicknessSlider = document.getElementById('maxLinkThickness') as HTMLInputElement;
 				const maxLinkThicknessLabel = document.getElementById('maxLinkThicknessLabel');
 				const connectionTypeRadios = document.querySelectorAll('input[name="connectionType"]');
+				const maxLabelCharactersSlider = document.getElementById('maxLabelCharacters') as HTMLInputElement;
+				const maxLabelCharactersLabel = document.getElementById('maxLabelCharactersLabel');
+				const linkLabelSizeSlider = document.getElementById('linkLabelSize') as HTMLInputElement;
+				const linkLabelSizeLabel = document.getElementById('linkLabelSizeLabel');
+				const nodeLabelSizeSlider = document.getElementById('nodeLabelSize') as HTMLInputElement;
+				const nodeLabelSizeLabel = document.getElementById('nodeLabelSizeLabel');
+
+				if (maxLabelCharactersSlider) {
+					maxLabelCharactersSlider.addEventListener('input', (event) => {
+						const newMaxLabelCharacters = parseInt((event.target as HTMLInputElement).value, 10);
+						if (maxLabelCharactersLabel) {
+							maxLabelCharactersLabel.textContent = `Max Label Characters: ${newMaxLabelCharacters}`;
+						}
+						this.maxLabelCharacters = newMaxLabelCharacters;
+						updateNodeLabels();
+					});
+				}
+
+				if (linkLabelSizeSlider) {
+					linkLabelSizeSlider.addEventListener('input', (event) => {
+						const newLinkLabelSize = parseFloat((event.target as HTMLInputElement).value);
+						if (linkLabelSizeLabel) {
+							linkLabelSizeLabel.textContent = `Link Label Size: ${newLinkLabelSize}`;
+						}
+						this.linkLabelSize = newLinkLabelSize;
+						updateLinkLabelSizes();
+					});
+				}
+
+				if (nodeLabelSizeSlider) {
+					nodeLabelSizeSlider.addEventListener('input', (event) => {
+						const newNodeLabelSize = parseFloat((event.target as HTMLInputElement).value);
+						if (nodeLabelSizeLabel) {
+							nodeLabelSizeLabel.textContent = `Node Label Size: ${newNodeLabelSize}`;
+						}
+						this.nodeLabelSize = newNodeLabelSize;
+						updateNodeLabelSizes();
+					});
+				}
+
 
 				// Event listener for Connection Type Radios slider
 				if (connectionTypeRadios) {
@@ -1229,7 +1283,7 @@ class MyItemView extends ItemView {
 	
 					});
 				}
-				
+
 				// Function to update center force based on the slider value
 				const updateCenterForce = (newCenterForce: number) => {
 					simulation.force('center', null); // Remove the existing center force
@@ -1287,6 +1341,22 @@ class MyItemView extends ItemView {
 					this.nodeSelection.attr('r', (d: any) => d.id === this.centralNode.id ? this.nodeSize + 3 : this.nodeSize);
 				};
 				
+				const updateNodeLabels = () => {
+					this.labelSelection
+						.attr('font-size', this.nodeLabelSize) // Update font size for node labels
+						.text((d: any) => this.formatLabel(d.name, true)); // Update text based on max label characters
+				};
+		
+				const updateLinkLabelSizes = () => {
+					this.linkLabelSelection.attr('font-size', this.linkLabelSize); // Update font size for link labels
+				};
+		
+				const updateNodeLabelSizes = () => {
+					console.log('updating node labels', this.nodeLabelSize);
+					this.labelSelection.attr('font-size', this.nodeLabelSize);
+				};
+				
+
 				// Function to debounce calls to updateVisualization
 				function debounce(func: Function, wait: number) {
 					let timeout: number | undefined;
@@ -1303,7 +1373,7 @@ class MyItemView extends ItemView {
 					scoreThresholdSlider.addEventListener('input', (event) => {
 						const newScoreThreshold = parseFloat((event.target as HTMLInputElement).value);
 						if (scoreThresholdLabel) {
-							scoreThresholdLabel.textContent = `Significance Threshold: ${newScoreThreshold}`;
+							scoreThresholdLabel.textContent = `Min Relevance: ${newScoreThreshold}`;
 						}
 					});
 	
@@ -1365,7 +1435,7 @@ class MyItemView extends ItemView {
 	
 				// Function to reset all variables to default using the global default constant
 				const resetToDefault = () => {
-					this.significanceScoreThreshold = DEFAULT_NETWORK_SETTINGS.scoreThreshold;
+					this.relevanceScoreThreshold = DEFAULT_NETWORK_SETTINGS.scoreThreshold;
 					this.nodeSize = DEFAULT_NETWORK_SETTINGS.nodeSize;
 					this.linkThickness = DEFAULT_NETWORK_SETTINGS.linkThickness;
 					this.repelForce = DEFAULT_NETWORK_SETTINGS.repelForce;
@@ -1374,8 +1444,8 @@ class MyItemView extends ItemView {
 					this.centerForce = DEFAULT_NETWORK_SETTINGS.centerForce;
 	
 					// Update slider values
-					if (scoreThresholdSlider) scoreThresholdSlider.value = `${this.significanceScoreThreshold}`;
-					if (scoreThresholdLabel) scoreThresholdLabel.textContent = `Significance Threshold: ${this.significanceScoreThreshold}`;
+					if (scoreThresholdSlider) scoreThresholdSlider.value = `${this.relevanceScoreThreshold}`;
+					if (scoreThresholdLabel) scoreThresholdLabel.textContent = `relevance Threshold: ${this.relevanceScoreThreshold}`;
 					if (nodeSizeSlider) nodeSizeSlider.value = `${this.nodeSize}`;
 					if (nodeSizeLabel) nodeSizeLabel.textContent = `Node Size: ${this.nodeSize}`;
 					if (lineThicknessSlider) lineThicknessSlider.value = `${this.linkThickness}`;
@@ -1407,7 +1477,7 @@ class MyItemView extends ItemView {
 	
 					// Restart the simulation with the new settings
 					simulation.alpha(0.3).alphaTarget(0).restart();
-					updateVisualization(this.significanceScoreThreshold);
+					updateVisualization(this.relevanceScoreThreshold);
 				};
 	
 	
