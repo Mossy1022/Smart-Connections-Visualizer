@@ -1,11 +1,12 @@
 {
-	"id": "D3",
-	"name": "D3 Plugin",
+	"id": "Smart-Connections-Graph-View",
+	"name": "Smart Connections Graph View",
 	"version": "1.0.2",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"description": "A plugin that allows you to view your Smart Connections in a graph format.",
+	"author": "Evan Moscoso",
+	"authorUrl": "https://github.com/mossy426",
+	"fundingUrl": "https://github.com/mossy426",
+	"isDesktopOnly": true
 }
+
