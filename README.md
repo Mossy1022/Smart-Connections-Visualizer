@@ -38,9 +38,9 @@ To open the Graph View:
 
 Access the settings menu by clicking the gear icon in the top right corner of the visualization pane. Here, you can adjust various parameters:
 
-- **Significance Threshold:** Adjust the threshold for displaying connections based on their significance.
+- **Relevance Threshold:** Adjust the threshold for displaying connections based on their relevance.
 - **Node Size:** Change the size of the nodes to make them more visible or to declutter the graph.
-- **Link Thickness:** Modify the thickness of the links to better visualize connection significance.
+- **Link Thickness:** Modify the thickness of the links to better visualize connection relevance.
 - **Text Fade Threshold:** Set the zoom level at which labels fade in and out.
 - **Repel Force:** Adjust the force that pushes nodes apart.
 - **Link Force:** Modify the strength of the connections.
