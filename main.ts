@@ -210,7 +210,10 @@ class MyItemView extends ItemView {
 				console.log("No smart notes found.");
 				return;
 			}
-		
+			
+			// .env.currentchat.addmessage()
+			// in chats module should have formatting array of keys in context code block
+
 			console.log('SmartNotes:', smartNotes);
 		
 			let nodes: any[] = [];
