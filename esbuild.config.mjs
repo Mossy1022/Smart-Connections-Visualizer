@@ -29,6 +29,8 @@ const copy_to_plugins = {
 			fs.copyFileSync("./main.js", path.join(plugin_path, "main.js"));
 			fs.copyFileSync("./manifest.json", path.join(plugin_path, "manifest.json"));
 			fs.copyFileSync("./styles.css", path.join(plugin_path, "styles.css"));
+			// add empty .hotreload file
+			fs.writeFileSync(path.join(plugin_path, ".hotreload"), "");
 			
 			console.log("Plugin built and copied to obsidian plugins folder");
 		});
