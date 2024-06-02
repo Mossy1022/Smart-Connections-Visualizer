@@ -20,11 +20,15 @@ If your plugin does not need CSS, delete this file.
 }
 .link-label {
     font-family: 'Cascadia';
-    font-size: 7px;
 }
+
 .node:hover {
     stroke: #fff;
     stroke-width: 0.4px;
+}
+
+.node {
+    z-index: 10; /* Ensure nodes are above other elements */
 }
 
 .settings-icon {
@@ -49,8 +53,11 @@ If your plugin does not need CSS, delete this file.
     width: 300px;
     z-index: 1000; /* Ensure the menu stays above other elements */
 }
+.dropdown-menu {
+    background-color: rgba(51, 51, 51, 0.9) !important;
+}
 .dropdown-menu.open {
-    display: block;
+    display: block !important;
 }
 .menu-header {
     display: flex;
