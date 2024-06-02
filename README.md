@@ -15,7 +15,7 @@ Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seaml
 Getting started with the Smart Connections Visualizer Plugin is easy. Follow these steps to install and integrate it with your Smart Connections setup:
 
 1. **Install Smart Connections Plugin:** Ensure you have the Smart Connections plugin installed in your Obsidian environment.
-2. **Install Smart Connections Graph View Plugin:** Download and install the Smart Connections Visualizer Plugin from the Obsidian Community Plugins.
+2. **Install Smart Connections Visualizer Plugin:** Download and install the Smart Connections Visualizer Plugin from the Obsidian Community Plugins.
 
 ## Usage
 
@@ -54,7 +54,7 @@ Access the settings menu by clicking the gear icon in the top right corner of th
 
 ## Community and Support
 
-Your involvement is crucial to the evolution of Smart Connections Graph View. From troubleshooting issues to suggesting new features, every contribution enriches our community and drives the project forward! 
+Your involvement is crucial to the evolution of Smart Connections Visualizer. From troubleshooting issues to suggesting new features, every contribution enriches our community and drives the project forward! 
 
 ### Join Our Community
 

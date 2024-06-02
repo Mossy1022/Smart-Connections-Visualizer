@@ -1,6 +1,6 @@
 {
 	"name": "smart-connections-visualizer",
-	"version": "1.0.3",
+	"version": "1.0.0",
 	"description": "A plugin that allows you to view your Smart Connections in a visualized format.",
 	"main": "main.js",
 	"scripts": {
@@ -11,6 +11,8 @@
 	"keywords": [
 		"Obsidian",
 		"Smart Connections",
+		"Visualizer",
+		"Smart Connections Visualizer",
 		"Graph",
 		"View"
 	],

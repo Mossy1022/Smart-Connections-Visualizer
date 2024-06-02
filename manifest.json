@@ -1,12 +1,12 @@
 {
-	"id": "Smart-Connections-Graph-View",
+	"id": "Smart-Connections-Visualizer",
 	"name": "Smart Connections Visualizer",
-	"version": "1.0.2",
+	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "A plugin that allows you to view your Smart Connections in a visualized format.",
 	"author": "Evan Moscoso",
-	"authorUrl": "https://github.com/mossy426",
-	"fundingUrl": "https://github.com/mossy426",
+	"authorUrl": "https://github.com/mossy1022",
+	"fundingUrl": "https://github.com/mossy1022",
 	"isDesktopOnly": true
 }
 
