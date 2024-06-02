@@ -39,7 +39,6 @@ class ScGraphItemView extends ItemView {
 	connectionType = 'block';
     isHovering: boolean; 
 	relevanceScoreThreshold = 0.6;
-	settingsInstantiated = false;
 	nodeSize = 3;
 	linkThickness = 0.3;
 	repelForce = 400;
@@ -86,11 +85,11 @@ class ScGraphItemView extends ItemView {
     }
 
     getViewType(): string {
-        return "Smart Graph View";
+        return "Smart Connections Visualizer";
     }
 
     getDisplayText(): string {
-        return "Smart Graph View";
+        return "Smart Connections Visualizer";
     }
 
     getIcon(): string {
@@ -471,12 +470,11 @@ class ScGraphItemView extends ItemView {
 	}
 
 	setupSettingsMenu() {
-		if (!this.settingsInstantiated) {
+		if (!document.querySelector('.settings-icon')) {
 			this.createSettingsIcon();
 			this.createDropdownMenu();
 			this.setupAccordionHeaders();
 			this.setupSettingsEventListeners();
-			this.settingsInstantiated = true;
 		}
 	}
 
@@ -539,10 +537,6 @@ class ScGraphItemView extends ItemView {
 	getDisplayContent() {
 		return `
 			<div class="slider-container">
-				<label id="fadeThresholdLabel" for="fadeThreshold">Text Fade Threshold: ${this.textFadeThreshold}</label>
-				<input type="range" id="fadeThreshold" class="slider" name="fadeThreshold" min="0.1" max="10" value="${this.textFadeThreshold}" step="0.01">
-			</div>
-			<div class="slider-container">
 				<label id="nodeSizeLabel" for="nodeSize">Node Size: ${this.nodeSize}</label>
 				<input type="range" id="nodeSize" class="slider" name="nodeSize" min="1" max="15" value="${this.nodeSize}" step="0.01">
 			</div>
@@ -565,6 +559,10 @@ class ScGraphItemView extends ItemView {
 			<div class="slider-container">
 				<label id="maxLinkThicknessLabel" for="maxLinkThickness">Max Link Thickness: ${this.maxLinkThickness}</label>
 				<input type="range" id="maxLinkThickness" class="slider" name="maxLinkThickness" min="0.1" max="10" value="${this.maxLinkThickness}" step="0.01">
+			</div>
+			<div class="slider-container">
+				<label id="fadeThresholdLabel" for="fadeThreshold">Text Fade Threshold: ${this.textFadeThreshold}</label>
+				<input type="range" id="fadeThreshold" class="slider" name="fadeThreshold" min="0.1" max="10" value="${this.textFadeThreshold}" step="0.01">
 			</div>
 		`;
 	}
@@ -949,7 +947,7 @@ class ScGraphItemView extends ItemView {
 		this.app.workspace.on('file-open', (file) => {
 			if (file && (this.currentNoteKey !== file.path) && !this.isHovering) {
 				this.currentNoteKey = file.path;
-				this.updateVisualization();
+				this.render();
 			}
 		});
 	}
@@ -957,6 +955,7 @@ class ScGraphItemView extends ItemView {
 	updateVisualization(newScoreThreshold?: number) {
 		if (this.updatingVisualization && !this.isChangingConnectionType) {
 			console.log('Update already in progress. Skipping...');
+			this.updatingVisualization = false;
 			return;
 		}
 		this.isChangingConnectionType = false;
@@ -987,6 +986,7 @@ class ScGraphItemView extends ItemView {
 		});
 	
 		if (nodesData.length === 0 || this.validatedLinks.length === 0) {
+			this.updatingVisualization = false;
 			console.warn('No nodes or links to display after filtering. Aborting update.');
 			return;
 		}
@@ -1002,7 +1002,7 @@ class ScGraphItemView extends ItemView {
 		this.simulation.force('link').links(this.validatedLinks)
 		.distance((d: any) => this.linkDistanceScale(d.score)); // Ensure the link distance is applied
 
-	this.simulation.alpha(1).restart();
+		this.simulation.alpha(1).restart();
 	
 		// Center the view
 		// this.centerView(nodesData);
@@ -1667,23 +1667,23 @@ export default class ScGraphView extends Plugin {
     async onload() {
         await this.loadSettings();
         // Register the new view
-        this.registerView("Smart Graph View", (leaf: WorkspaceLeaf) => new ScGraphItemView(leaf));
+        this.registerView("Smart Connections Visualizer", (leaf: WorkspaceLeaf) => new ScGraphItemView(leaf));
 
 				// Register hover link source
-				this.registerHoverLinkSource('Smart Graph', {
-					display: 'Smart Graph Hover Link Source',
+				this.registerHoverLinkSource('Smart Connections Visualizer', {
+					display: 'Smart Connections Visualizer Hover Link Source',
 					defaultMod: true
 				});
 
         // This creates an icon in the left ribbon.
-        const ribbonIconEl = this.addRibbonIcon('git-fork', 'Smart Graph', (evt: MouseEvent) => {
+        const ribbonIconEl = this.addRibbonIcon('git-fork', 'Smart Connections Visualizer', (evt: MouseEvent) => {
             // Called when the user clicks the icon.
             // Create a new leaf in the current workspace
             let leaf = this.app.workspace.getLeaf(true);
     
             // Set the new leaf's view to your custom view
             leaf.setViewState({
-                type: "Smart Graph View",
+                type: "Smart Connections Visualizer",
                 active: true,
             });
         })
@@ -1704,7 +1704,7 @@ export default class ScGraphView extends Plugin {
         
                 // Set the new leaf's view to your custom view
                 leaf.setViewState({
-                    type: "Smart Graph View",
+                    type: "Smart Connections Visualizer",
                     active: true,
                 });
             }
@@ -1735,7 +1735,7 @@ export default class ScGraphView extends Plugin {
         
                 // Set the new leaf's view to your custom view
                 leaf.setViewState({
-                    type: "Smart Graph View",
+                    type: "Smart Connections Visualizer",
                     active: true,
                 });
             }

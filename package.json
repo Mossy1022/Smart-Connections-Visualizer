@@ -1,7 +1,7 @@
 {
-	"name": "smart-connections-graph-view",
+	"name": "smart-connections-visualizer",
 	"version": "1.0.2",
-	"description": "A plugin that allows you to view your Smart Connections in a graph format.",
+	"description": "A plugin that allows you to view your Smart Connections in a visualized format.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

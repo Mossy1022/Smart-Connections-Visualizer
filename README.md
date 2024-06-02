@@ -1,75 +1,56 @@
-# Smart Connections Graph View
+# Smart Connections Visualizer
 
-Welcome to the Smart Connections Graph View Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. Our goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.
+Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. Our goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.
 
 ## Features
 
-- **Dynamic Force-Directed Graph:** Visualize connections as a force-directed graph where nodes represent notes or specific excerpts from them and edges represent connections.
-- **Adjustable Visualization Settings:** Customize node size, link thickness, and text fade thresholds to tailor the visualization to your preferences.
-- **Interactive Tooltips:** Hover over links to see detailed information about connections.
+- **Dynamic Force-Directed Graph:** Visualize connections as a force-directed graph where nodes represent notes or specific excerpts from them and edges represent connections.  
+- **Easily view more relevant connections:** The distances between nodes and the central node (currently viewed note) are proportional to the relevance of the connections.  The closer the distance to the main node, the more relevant the connection is.  You can also adjust min and mx width of links to better distinguish these notes/blocks based on relevance.
+- **Adjustable Visualization Settings:** Customize node size, label size, and text fade distance and more to tailor the visualization to your preferences.
+- **Previewing Notes:** Ability to see note previews in the visualization view when hovering over a node.
 - **Customizable Forces:** Adjust the repel force, link force, and center force for a more personalized layout.
-- **Selection Box:** Multi-select nodes using a selection box, with accurate selection regardless of zoom and pan levels.
 
 ## Installation
 
-Getting started with the Smart Connections Graph View Plugin is easy. Follow these steps to install and integrate it with your Smart Connections setup:
+Getting started with the Smart Connections Visualizer Plugin is easy. Follow these steps to install and integrate it with your Smart Connections setup:
 
 1. **Install Smart Connections Plugin:** Ensure you have the Smart Connections plugin installed in your Obsidian environment.
-2. **Install Smart Connections Graph View Plugin:** Download and install the Smart Connections  Graph View Plugin from the Obsidian Community Plugins.
+2. **Install Smart Connections Graph View Plugin:** Download and install the Smart Connections Visualizer Plugin from the Obsidian Community Plugins.
 
 ## Usage
 
-Once installed, the Smart Connections Graph View Plugin provides an intuitive interface to explore your notes' connections. Click on the dice icon to the left that says "Smart Graph".
+Once installed, the Smart Connections Visualizer Plugin provides an intuitive interface to explore your notes' connections.
 
-### Opening the Graph View
+### Opening the Visualizer
 
-To open the Graph View:
+To open the Visualizer View:
 
-1. Select the ribbon icon to the left that will display "Smart Graph"
+1. Select the ribbon icon to the left that will display "Smart Connections Visualizer"
 2. The visualization pane will appear, displaying a dynamic force-directed graph of your notes and their connections.
 
-### Interacting with the Graph
+### Interacting with the Visualization
 
-- **Zooming:** Use the mouse wheel or touchpad to zoom in and out of the graph.
-- **Panning:** Click and drag the graph to move it around.
-- **Hovering:** Hover over links to see tooltips displaying connection details.
+- **Zooming:** Use the mouse wheel or touchpad to zoom in and out of the view.
+- **Panning:** Click and drag the visualization to move it around.
+- **Hovering:** Hover over nodes to highlight them - displaying the full node label and link label, which right now the link label displays the relevance score.
+- **Previewing Notes:** When hovering over a node, press the `Ctrl` (`Command` for Mac) key to view a preview of the note or block that the node represents.
 
 ### Customizing the Visualization
 
 Access the settings menu by clicking the gear icon in the top right corner of the visualization pane. Here, you can adjust various parameters:
 
-- **Relevance Threshold:** Adjust the threshold for displaying connections based on their relevance.
-- **Node Size:** Change the size of the nodes to make them more visible or to declutter the graph.
-- **Link Thickness:** Modify the thickness of the links to better visualize connection relevance.
-- **Text Fade Threshold:** Set the zoom level at which labels fade in and out.
-- **Repel Force:** Adjust the force that pushes nodes apart.
-- **Link Force:** Modify the strength of the connections.
-- **Center Force:** Change the force that keeps the graph centered.
-
-## How To
-
-### Panning and Zooming
-
-- **Zooming:** Use the mouse wheel or touchpad to zoom in and out of the graph. This allows you to focus on specific areas or get a broad view of all connections.
-- **Panning:** Click and drag the graph to move it around. This helps you navigate through different parts of the graph without changing the zoom level.
-
-### Multi-Selecting Nodes
-
-- **Selection Box:** Hold the `Ctrl` key and click and drag to create a selection box. Nodes within the box will be selected.
-- **Individual Node Selection:** Hold the `Alt` (`Option` for Mac) key and click on individual nodes to select or deselect them without affecting other selected nodes.
-- **Clearing Selections:** Click on an empty space in the graph or press `Esc` to clear all selections.
-
-### Settings Menu
-
-1. Click the gear icon in the top right corner of the visualization pane to open the settings menu.
-2. Adjust various parameters to customize the visualization to your liking:
-   - **Score Threshold:** Use the slider to set the minimum score for displaying connections.
-   - **Node Size:** Adjust the slider to change the size of the nodes.
-   - **Link Thickness:** Use the slider to modify the thickness of the links.
-   - **Text Fade Threshold:** Set the zoom level at which labels appear or disappear.
-   - **Repel Force:** Adjust the slider to change the force that pushes nodes apart.
-   - **Link Force:** Modify the slider to change the strength of the connections.
-   - **Center Force:** Use the slider to change the force that keeps the graph centered.
+- **Minimum Relevance**: Adjust the slider to change the minimum relevance score needed for displaying connections.
+- **Connection Type**: Choose whether to display connections by block, or by note.
+- **Node Size**: Change the size of the nodes to make them more visible or to declutter the visualization.
+- **Maximum Label Characters**: Define the maximum number of characters displayed on node labels before they truncate/are shortened. Note: hovering over a node will display the full node label.
+- **Minimum Link Thickness**: Set the minimum thickness for the links. Helps to distinguish between less relevant connections.
+- **Maximum Link Thickness**: Set the maximum thickness for the links. Helps to distinguish between less relevant connections.
+- **Link Label Size**: Change the font size of the link labels. Note: Link label will display when hovering over a node.
+- **Node Label Size**: Adjust the font size of the node labels.
+- **Text Fade Threshold**: Set the zoom level at which labels fade in and out.
+- **Repel Force**: Adjust the force that pushes nodes apart.
+- **Link Force**: Modify the strength of the links between nodes.
+- **Link Distance**: Adjust the distance between connected nodes - relevance distance will increase/decrease proportionally.
 
 ## Community and Support
 
