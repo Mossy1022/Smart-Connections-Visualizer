@@ -83,7 +83,7 @@ The Smart Connections Visualization Plugin is open-source and available under th
 
 ## About Me
 
-Hi! Name's Evan Moscoso, and I'm a senior software developer/architect consultant for General Dynamics, contracted out to the CDC to manage and develop data visualization tools.  I've been obsessed about what's transpiring with AI for the last 15 years, knowing that it would soon change the world like this.  The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information AND use logic with it.  We need to offload the information into a visualization in order to save the state and keep progressing in complex problems.  
+Hello there! Name's Evan Moscoso, and I'm a senior software developer/architect consultant for General Dynamics, contracted out to the CDC to manage and develop data visualization tools.  I've been obsessed about what's transpiring with AI for the last 15 years, knowing that it would soon change the world like this.  The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information AND use logic with it.  We need to offload the information into a visualization in order to save the state and keep progressing in complex problems.  
 
 It's similar to solving a puzzle of Sudoku, except there is no board and you have to do it all in your head. Just imagine the difference in your ability to solve the puzzle with and without the board. I can hear the music.. and I want nothing more to improve how we communicate and make better decisions.
 
@@ -95,6 +95,8 @@ I've continuosly been giving webinars to both CDC and GDIT on the most significa
 One of my life's main questlines is to inspire people to take advantage of the outragous new abilities we have with AI and how we can use them to help us in our every day lives.
 
 TLDR: I was born for this.
+
+Lastly, as passionate as I am about this, I'm also developing a device that allows people to control technology using the motion capture of their tongue– effectively giving us a 5th limb that will allow us to be a universal, hands-free remote.  Just so you're not "visualizing" your mouth open with tongue moving around, you can have your mouth completely closed and it looks like mind control. We're hoping that it'll b aeble to do wonders for those with phyiscal limitations who can't use technology as effectively.  We are in the funding phase, but have developed several functional prototypes.  You can find out more at: [Glosdex.com](https://glosdex.com/) 
 
 ## The Future
 
