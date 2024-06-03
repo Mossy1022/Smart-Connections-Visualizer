@@ -67,7 +67,7 @@ Access the settings menu by clicking the gear icon in the top right corner of th
 
 Your involvement is crucial to the evolution of Smart Connections Visualizer. From troubleshooting issues to suggesting new features, every contribution enriches our community and drives the project forward! 
 
-### Join Our Community
+### Join The Community
 
 - **GitHub Discussions**: Participate in discussions on GitHub to share your experiences and ask questions.
 - **Contribute**: Help develop the plugin, report issues, or suggest new features.
