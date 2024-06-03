@@ -57,8 +57,8 @@ Access the settings menu by clicking the gear icon in the top right corner of th
 - **Link Distance**: Adjust the distance between connected nodes - relevance distance will increase/decrease proportionally.
 
 <span>
-  <img src="DisplaySettings.gif" alt="Demo of the application" width="500" height="400" />
-  <img src="ForceSettings.gif" alt="Demo of the application" width="500" height="400" />
+  <img src="DisplaySettings.gif" alt="Demo of the application" width="450" height="400" />
+  <img src="ForceSettings.gif" alt="Demo of the application" width="450" height="400" />
 </span>
 
 
