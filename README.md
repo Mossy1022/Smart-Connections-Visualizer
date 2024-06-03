@@ -57,7 +57,8 @@ Access the settings menu by clicking the gear icon in the top right corner of th
 - **Link Force**: Modify the strength of the links between nodes.
 - **Link Distance**: Adjust the distance between connected nodes - relevance distance will increase/decrease proportionally.
 
-![Display Settings](DisplaySettings.gif)
+![Display Settings](DisplaySettings.gif) ![Force Settings](ForceSettings.gif)
+
 
 ## Community and Support
 
