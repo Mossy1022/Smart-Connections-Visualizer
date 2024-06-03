@@ -104,7 +104,7 @@ I will begin adding future items here in a bit, but I can tell you there is ALOT
 
 I believe this would also eliminate the "hallucination" problem with AI where the saved state is the visualization and independent on whatever it is the AI remembers.  It will always have the right context! 
 
-The point is to see everything you couldnt see before and watch what happens when you update information as it cascades and affects all other connections.  We're about to enter a realm of exponenitally increased problem solving through visualizing our text-based information and the possibilites are endless!  I'm spending a lot of time on this on top of my other jobs, so any support would be more than appreciated to give me more time to keep going at it :) 
+The point is to see everything you couldnt see before and watch what happens when you update information as it cascades and affects all other connections.  We're about to enter a realm of exponentially increased problem solving through visualizing our text-based information and the possibilites are endless!  I'm spending a lot of time on this on top of my other jobs, so any support would be more than appreciated to give me more time to keep going at it :) 
 
 ---
 
