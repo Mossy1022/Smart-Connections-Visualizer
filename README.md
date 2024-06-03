@@ -100,7 +100,7 @@ Lastly, as passionate as I am about this, I'm also developing a device that allo
 
 ## The Future
 
-I will begin adding future items here in a bit, but I can tell you there is ALOT to be done here that will change EVERYTHING.  The ultimate mission for this is to essentially do away with text-based organization and instead visualize information in a saved state that's dynamically arranged by whatever context the user desires (like a prompt).  A point where as you add on more notes, the state updates in a single visualization and you can see how the new information impacts the old through various relationships (i.e supportive vs contradictory statements related to the context), rather than have everything in separate folders even though technically everything is connected below a certain threshold.
+I will begin adding future items here in a bit, but I can tell you there is ALOT to be done here that should drastically change how we go about note taking and note making.  The ultimate mission for this is to essentially do away with text-based organization and instead visualize information in a saved state that's dynamically arranged by whatever context the user desires (like a prompt).  A point where as you add on more notes, the state updates in a single visualization and you can see how the new information impacts the old through various relationships (i.e supportive vs contradictory statements related to the context), rather than have everything in separate folders even though technically everything is connected below a certain threshold.
 
 I believe this would also eliminate the "hallucination" problem with AI where the saved state is the visualization and independent on whatever it is the AI remembers.  It will always have the right context! 
 
