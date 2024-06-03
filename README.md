@@ -96,7 +96,7 @@ One of my life's main questlines is to inspire people to take advantage of the o
 
 TLDR: I was born for this.
 
-Lastly, as passionate as I am about this, I'm also developing a device that allows people to control technology using the motion capture of their tongue– effectively giving us a 5th limb that will allow us to be a universal, hands-free remote.  Just so you're not "visualizing" your mouth open with tongue moving around, you can have your mouth completely closed and it looks like mind control. We're hoping that it'll b aeble to do wonders for those with phyiscal limitations who can't use technology as effectively.  We are in the funding phase, but have developed several functional prototypes.  You can find out more at: [Glosdex.com](https://glosdex.com/) 
+Lastly, as passionate as I am about this, I'm also developing a device that allows people to control technology using the motion capture of their tongue– effectively giving us a 5th limb that will allow us to be a universal, hands-free remote.  Just so you're not "visualizing" your mouth open with tongue moving around, you can have your mouth completely closed and it looks like mind control. We're hoping that it'll be able to do wonders for those with phyiscal limitations who can't use technology as effectively.  We are in the funding phase, but have developed several functional prototypes.  You can find out more at: [Glosdex.com](https://glosdex.com/) 
 
 ## The Future
 
