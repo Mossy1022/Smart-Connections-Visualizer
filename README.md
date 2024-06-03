@@ -38,6 +38,8 @@ To open the Visualizer View:
 - **Hovering:** Hover over nodes to highlight them - displaying the full node label and link label, which right now the link label displays the relevance score.
 - **Previewing Notes:** When hovering over a node, press the `Ctrl` (`Command` for Mac) key to view a preview of the note or block that the node represents.
 
+![Preview](Preview.gif)
+
 ### Customizing the Visualization
 
 Access the settings menu by clicking the gear icon in the top right corner of the visualization pane. Here, you can adjust various parameters:
