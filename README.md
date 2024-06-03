@@ -2,13 +2,12 @@
 
 Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. Our goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.
 
+![App Demo](Intro.gif)
+
 ## Features
 
 - **Dynamic Force-Directed Graph:** Visualize connections as a force-directed graph where nodes represent notes or specific excerpts from them and edges represent connections.  
 - **Easily view more relevant connections:** The distances between nodes and the central node (currently viewed note) are proportional to the relevance of the connections.  The closer the distance to the main node, the more relevant the connection is.  You can also adjust min and mx width of links to better distinguish these notes/blocks based on relevance.
-
-![App Demo](ChangeRelevance.gif)
-
 - **Adjustable Visualization Settings:** Customize node size, label size, and text fade distance and more to tailor the visualization to your preferences.
 - **Previewing Notes:** Ability to see note previews in the visualization view when hovering over a node.
 - **Customizable Forces:** Adjust the repel force, link force, and center force for a more personalized layout.
