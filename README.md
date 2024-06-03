@@ -1,6 +1,6 @@
 # Smart Connections Visualizer
 
-Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. Our goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.
+Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. My goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.
 
 ![App Demo](Intro.gif)
 
@@ -94,4 +94,4 @@ I'd really like to go all in on my AI consulting company and continue developmen
 
 ---
 
-Feel free to reach out with any questions or suggestions. We hope this plugin enhances your note-taking experience and helps you uncover new insights and connections within your notes. Happy visualizing!
+Feel free to reach out with any questions or suggestions. I hope this plugin enhances your note-taking experience and helps you uncover new insights and connections within your notes. Happy visualizing!
