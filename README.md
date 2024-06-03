@@ -57,6 +57,8 @@ Access the settings menu by clicking the gear icon in the top right corner of th
 - **Link Force**: Modify the strength of the links between nodes.
 - **Link Distance**: Adjust the distance between connected nodes - relevance distance will increase/decrease proportionally.
 
+![Display Settings](DisplaySettings.gif)
+
 ## Community and Support
 
 Your involvement is crucial to the evolution of Smart Connections Visualizer. From troubleshooting issues to suggesting new features, every contribution enriches our community and drives the project forward! 
