@@ -29,7 +29,7 @@ To open the Visualizer View:
 
 1. Select the ribbon icon to the left that will display "Smart Connections Visualizer"
 2. The visualization pane will appear.
-3. Select a note and you'll see a dynamic force-directed graph of your notes and their connections displayed.
+3. Select a note and you'll see a dynamic force-directed graph of that note and its connections displayed.
 
 ### Interacting with the Visualization
 
