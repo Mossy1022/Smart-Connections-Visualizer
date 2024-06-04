@@ -1,6 +1,8 @@
-# Smart Connections Visualizer
+# Smart Connections Visualizer `v1.0`
 
-Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. Our goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.
+![App Demo](Intro.gif)
+
+Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. My goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.  
 
 ## Features
 
@@ -35,6 +37,8 @@ To open the Visualizer View:
 - **Hovering:** Hover over nodes to highlight them - displaying the full node label and link label, which right now the link label displays the relevance score.
 - **Previewing Notes:** When hovering over a node, press the `Ctrl` (`Command` for Mac) key to view a preview of the note or block that the node represents.
 
+![Preview](Preview.gif)
+
 ### Customizing the Visualization
 
 Access the settings menu by clicking the gear icon in the top right corner of the visualization pane. Here, you can adjust various parameters:
@@ -52,11 +56,44 @@ Access the settings menu by clicking the gear icon in the top right corner of th
 - **Link Force**: Modify the strength of the links between nodes.
 - **Link Distance**: Adjust the distance between connected nodes - relevance distance will increase/decrease proportionally.
 
+<span>
+  <img src="DisplaySettings.gif" alt="Demo of the application" width="400" height="300" />
+  <img src="ForceSettings.gif" alt="Demo of the application" width="400" height="300" />
+</span>
+
+## Vision
+
+The text communication format between humans and AI is **incredibly** inefficient. I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI but also create a new discovery and decision-making process that will transform how we approach virtually everything. Our brains can't physically retain all the information and use logic to solve our more complex problems simultaneously. We need to offload this information into a visualization to save our progress and pick up where we left off.
+
+Imagine solving a Sudoku puzzle without a board. That's what we're doing right now when communicating, arguing, and solving problems. You have to memorize all the factors in the starting position, all the moves you make, all the relationships that change with every single move, and so on..  For the complex problems/puzzles we have in life, imagine the difference in our ability to solve them WITH the board. The puzzle is there– we just haven't made the board for it yet!
+
+![Sudoku](Sudoku.png)
+
+With this plugin, I envision a future where note-taking, whether text or voice, doesn't get lost. I struggle with maintaining a strict note-taking structure, and things often fall through the cracks. This challenge, combined with my obsession, drives me to create this plugin. While it's not perfect yet, it's a promising start and could improve significantly with your help :) I can hear the music.. and I'm excited to see who else can too!
+
+The ultimate mission is to move away from text-based organization and instead visualize information in a dynamic, context-driven state. As you add more notes, the state updates in a single visualization, showing how new information impacts the old through various relationships (e.g., supportive vs. contradictory statements). This approach eliminates the need for separate folders, as everything is interconnected and builds on top of each other.
+
+I believe this will also solve the "hallucination" problem with AI. By using a visualization as the saved state/knowledge base/memory, we ensure the AI always has the correct context that both you and the AI have worked on and, importantly, that **you** have approved.
+
+The goal is to see everything you couldn't see before and observe how updating information cascades and affects all other connections. We're on the brink of exponentially increased problem-solving capabilities through visualizing our text-based information, and the possibilities are endless! I've been dedicating a lot of time to this project alongside my other jobs, so any support would be greatly appreciated to allow me more time to keep going :) 
+
+## About Me
+
+Hello there! Name's Evan. I'm a senior software developer/architect consultant, currently managing and developing data visualization tools for the CDC.  I've been obsessed about what's transpiring with AI for the last 12-ish years, fully aware that it would soon completely change the world.
+
+Inspired by Brian, the creator of Smart Connections, I started an AI consulting company called "Evan's Oasis." At Evan's Oasis, I audit business workflows for clients and recommend AI tools and practices that significantly enhance decision-making, productivity, and quality—while reducing the time and money needed to run a business.
+
+I've been actively sharing my knowledge by giving webinars to both General Dynamics and the CDC on the most significant AI updates, as well as hosting in-person seminars for the local community. One of my life's main questlines is to inspire people to take advantage of the outragoues new capabilities we have with AI and to show how these tools can assist us in our everyday lives. 
+
+TLDR: I was born for this.
+
+In addition to my passion for AI, I'm also developing a device that allows people to control technology using motion capture of their tongue—effectively giving us a fifth limb for universal, hands-free remote control. And don't worry, you won't be moving your tongue around with your mouth open; you can keep your mouth completely closed, and it looks like mind control. We're hoping this device will do wonders for those with physical limitations who can't use technology as effectively. We are currently in the funding phase but have developed several functional prototypes. You can find out more at [Glosdex.com](https://glosdex.com/) 
+
 ## Community and Support
 
 Your involvement is crucial to the evolution of Smart Connections Visualizer. From troubleshooting issues to suggesting new features, every contribution enriches our community and drives the project forward! 
 
-### Join Our Community
+### Join The Community
 
 - **GitHub Discussions**: Participate in discussions on GitHub to share your experiences and ask questions.
 - **Contribute**: Help develop the plugin, report issues, or suggest new features.
@@ -70,17 +107,7 @@ Special thanks to Brian, the developer behind [Smart Connections](https://github
 
 The Smart Connections Visualization Plugin is open-source and available under the MIT License. Contributions are welcome!
 
-## About Me
-
-Hi! Name's Evan Moscoso, and right now I'm a senior software developer/architect consultant for General Dynamics, contracted out to the CDC to manage and develop data visualization tools.  I've been obsessed about what's transpiring with AI for the last 15 years, knowing that it would soon change the world like this.  The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information and use logic with it.  We need to visualize in order to save state and keep progressing in complex problems.  I can hear the music.. and I want nothing more to improve how we communicate and make better decisions.  
-
-Inspired by Brian (creator of Smart Connections), I started an AI consulting company "Evan's Oasis" where I audit business workflows of clients and suggest AI tools and practices to significantly increase decision making, productivity, and quality– all while cutting down on time and money needed to run a business.  
-
-I've continuosly been giving webinars to both CDC and GDIT on the most significant AI updates, as well as in-person local community seminars around the Tampa Bay area. 
-One of my life's main questlines is to inspire people to take advantage of the outragous new abilities we have with AI and how we can use them to help us in our every day lives.
-
-I'd really like to go all in on my AI consulting company and continue development on this when I can afford to :)
 
 ---
 
-Feel free to reach out with any questions or suggestions. We hope this plugin enhances your note-taking experience and helps you uncover new insights and connections within your notes. Happy visualizing!
+Feel free to reach out with any questions or suggestions. I hope this plugin enhances your note-taking experience and helps you uncover new insights and connections within your notes. Happy visualizing!
