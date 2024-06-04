@@ -20,7 +20,7 @@ const DEFAULT_NETWORK_SETTINGS : any = {
 	centerForce: 0.1,
 	textFadeThreshold: 1.1,
 	minLinkThickness: 0.3,
-	maxLinkThickness: 4,
+	maxLinkThickness: 0.6,
 	maxLabelCharacters: 18,
 	linkLabelSize: 7,
 	nodeLabelSize: 6,
@@ -253,7 +253,6 @@ class ScGraphItemView extends ItemView {
 		this.contentEl.empty();
 		this.initializeVariables();
 		if (Object.keys(this.smartNotes).length === 0) {
-			console.log("No smart notes found.");
 			return;
 		}
 		this.setupSVG();
@@ -479,136 +478,134 @@ class ScGraphItemView extends ItemView {
 	}
 
 	createSettingsIcon() {
-		const settingsIcon = document.createElement('div');
-		settingsIcon.innerHTML = '&#9881;';
-		settingsIcon.classList.add('settings-icon');
-		this.contentEl.appendChild(settingsIcon);
+		const settingsIcon = this.contentEl.createEl('div', { cls: 'settings-icon' });
+		settingsIcon.createEl('span', { text: '⚙' }); // Unicode character for settings icon
 		settingsIcon.addEventListener('click', this.toggleDropdownMenu);
 	}
 
 	createDropdownMenu() {
-		const dropdownMenu = document.createElement('div');
-		dropdownMenu.classList.add('dropdown-menu');
-		dropdownMenu.innerHTML = this.getDropdownMenuContent();
-		this.contentEl.appendChild(dropdownMenu);
+		const dropdownMenu = this.contentEl.createEl('div', { cls: 'dropdown-menu' });
+		this.buildDropdownMenuContent(dropdownMenu);
 	}
 
-	getDropdownMenuContent() {
-		return `
-			<div class="menu-header">
-				<div class="icon" id="refresh-icon">&#8635;</div>
-				<div class="icon" id="close-icon">&#10005;</div>
-			</div>
-			${this.getAccordionItem('Filters', this.getFiltersContent())}
-			${this.getAccordionItem('Display', this.getDisplayContent())}
-			${this.getAccordionItem('Forces', this.getForcesContent())}
-		`;
+	buildDropdownMenuContent(dropdownMenu: HTMLElement) {
+		const menuHeader = dropdownMenu.createEl('div', { cls: 'menu-header' });
+		menuHeader.createEl('div', { cls: 'icon', attr: { id: 'refresh-icon' }, text: '⟳' });
+		menuHeader.createEl('div', { cls: 'icon', attr: { id: 'close-icon' }, text: '✖' });
+	
+		this.addAccordionItem(dropdownMenu, 'Filters', this.getFiltersContent.bind(this));
+		this.addAccordionItem(dropdownMenu, 'Display', this.getDisplayContent.bind(this));
+		this.addAccordionItem(dropdownMenu, 'Forces', this.getForcesContent.bind(this));
 	}
-
-	getAccordionItem(title: string, content: string) {
-		const rightArrow = `
-			<svg class="dropdown-indicator" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-				<path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-			</svg>`;
-		return `
-			<div class="accordion-item">
-				<div class="accordion-header">
-					<span class="arrow-icon">${rightArrow}</span>${title}
-				</div>
-				<div class="accordion-content">${content}</div>
-			</div>
-		`;
+	
+	
+	addAccordionItem(parent: HTMLElement, title: string, buildContent: (parent: HTMLElement) => void) {
+		const accordionItem = parent.createEl('div', { cls: 'accordion-item' });
+		const header = accordionItem.createEl('div', { cls: 'accordion-header' });
+	
+		const arrowIcon = header.createEl('span', { cls: 'arrow-icon' });
+		arrowIcon.appendChild(this.createRightArrow());
+	
+		header.createEl('span', { text: title });
+	
+		const accordionContent = accordionItem.createEl('div', { cls: 'accordion-content' });
+		buildContent(accordionContent);
 	}
+	
+	getFiltersContent(parent: HTMLElement) {
+		const sliderContainer1 = parent.createEl('div', { cls: 'slider-container' });
+		sliderContainer1.createEl('label', { 
+			text: `Min Relevance: ${(this.relevanceScoreThreshold * 100).toFixed(0)}%`, 
+			attr: { id: 'scoreThresholdLabel', for: 'scoreThreshold' } 
+		});
+		const relevanceSlider = sliderContainer1.createEl('input', { 
+			attr: { 
+				type: 'range', 
+				id: 'scoreThreshold', 
+				class: 'slider', 
+				name: 'scoreThreshold', 
+				min: '0', 
+				max: '0.99', 
+				step: '0.01' 
+			} 
+		});
 
-	getFiltersContent() {
-		return `
-			<div class="slider-container">
-				<label id="scoreThresholdLabel" for="scoreThreshold">Min Relevance: ${(this.relevanceScoreThreshold * 100).toFixed(0)}%</label>
-				<input type="range" id="scoreThreshold" class="slider" name="scoreThreshold" min="0" max="0.99" value="${this.relevanceScoreThreshold}" step="0.01">
-			</div>
-			<label class="settings-item-content-label">Connection Type:</label>
-			<div class="radio-container">
-				<label><input type="radio" name="connectionType" value="block" ${this.connectionType === 'block' ? 'checked' : ''}> Block</label>
-				<label><input type="radio" name="connectionType" value="note" ${this.connectionType === 'note' ? 'checked' : ''}> Note</label>
-			</div>
-		`;
+		// Ensure the slider's value is set after it is appended to the DOM
+		relevanceSlider.value = this.relevanceScoreThreshold.toString();
+	
+		parent.createEl('label', { text: 'Connection Type:', cls: 'settings-item-content-label' });
+	
+		const radioContainer = parent.createEl('div', { cls: 'radio-container' });
+
+		const radioBlockLabel = radioContainer.createEl('label');
+		const blockRadio = radioBlockLabel.createEl('input', { 
+			attr: { 
+				type: 'radio', 
+				name: 'connectionType', 
+				value: 'block' 
+			} 
+		});
+		blockRadio.checked = (this.connectionType === 'block'); // Set checked based on connectionType
+		radioBlockLabel.appendText(' Block');
+	
+		const radioNoteLabel = radioContainer.createEl('label');
+		const noteRadio = radioNoteLabel.createEl('input', { 
+			attr: { 
+				type: 'radio', 
+				name: 'connectionType', 
+				value: 'note' 
+			} 
+		});
+		noteRadio.checked = (this.connectionType === 'note'); // Set checked based on connectionType
+		radioNoteLabel.appendText(' Note');
 	}
+	
 
-	getDisplayContent() {
-		return `
-			<div class="slider-container">
-				<label id="nodeSizeLabel" for="nodeSize">Node Size: ${this.nodeSize}</label>
-				<input type="range" id="nodeSize" class="slider" name="nodeSize" min="1" max="15" value="${this.nodeSize}" step="0.01">
-			</div>
-			<div class="slider-container">
-				<label id="maxLabelCharactersLabel" for="maxLabelCharacters">Max Label Characters: ${this.maxLabelCharacters}</label>
-				<input type="range" id="maxLabelCharacters" class="slider" name="maxLabelCharacters" min="1" max="50" value="${this.maxLabelCharacters}" step="1">
-			</div>
-			<div class="slider-container">
-				<label id="linkLabelSizeLabel" for="linkLabelSize">Link Label Size: ${this.linkLabelSize}</label>
-				<input type="range" id="linkLabelSize" class="slider" name="linkLabelSize" min="1" max="15" value="${this.linkLabelSize}" step="0.01">
-			</div>
-			<div class="slider-container">
-				<label id="nodeLabelSizeLabel" for="nodeLabelSize">Node Label Size: ${this.nodeLabelSize}</label>
-				<input type="range" id="nodeLabelSize" class="slider" name="nodeLabelSize" min="1" max="26" value="${this.nodeLabelSize}" step="1">
-			</div>
-			<div class="slider-container">
-				<label id="minLinkThicknessLabel" for="minLinkThickness">Min Link Thickness: ${this.minLinkThickness}</label>
-				<input type="range" id="minLinkThickness" class="slider" name="minLinkThickness" min="0.1" max="10" value="${this.minLinkThickness}" step="0.01">
-			</div>
-			<div class="slider-container">
-				<label id="maxLinkThicknessLabel" for="maxLinkThickness">Max Link Thickness: ${this.maxLinkThickness}</label>
-				<input type="range" id="maxLinkThickness" class="slider" name="maxLinkThickness" min="0.1" max="10" value="${this.maxLinkThickness}" step="0.01">
-			</div>
-			<div class="slider-container">
-				<label id="fadeThresholdLabel" for="fadeThreshold">Text Fade Threshold: ${this.textFadeThreshold}</label>
-				<input type="range" id="fadeThreshold" class="slider" name="fadeThreshold" min="0.1" max="10" value="${this.textFadeThreshold}" step="0.01">
-			</div>
-		`;
+	getDisplayContent(parent: HTMLElement) {
+		const displaySettings = [
+			{ id: 'nodeSize', label: 'Node Size', value: this.nodeSize, min: 1, max: 15, step: 0.01 },
+			{ id: 'maxLabelCharacters', label: 'Max Label Characters', value: this.maxLabelCharacters, min: 1, max: 50, step: 1 },
+			{ id: 'linkLabelSize', label: 'Link Label Size', value: this.linkLabelSize, min: 1, max: 15, step: 0.01 },
+			{ id: 'nodeLabelSize', label: 'Node Label Size', value: this.nodeLabelSize, min: 1, max: 26, step: 1 },
+			{ id: 'minLinkThickness', label: 'Min Link Thickness', value: this.minLinkThickness, min: 0.1, max: 10, step: 0.01 },
+			{ id: 'maxLinkThickness', label: 'Max Link Thickness', value: this.maxLinkThickness, min: 0.1, max: 10, step: 0.01 },
+			{ id: 'fadeThreshold', label: 'Text Fade Threshold', value: this.textFadeThreshold, min: 0.1, max: 10, step: 0.01 }
+		];
+	
+		displaySettings.forEach(setting => {
+			const sliderContainer = parent.createEl('div', { cls: 'slider-container' });
+			sliderContainer.createEl('label', { text: `${setting.label}: ${setting.value}`, attr: { id: `${setting.id}Label`, for: setting.id } });
+			sliderContainer.createEl('input', { attr: { type: 'range', id: setting.id, class: 'slider', name: setting.id, min: `${setting.min}`, max: `${setting.max}`, value: `${setting.value}`, step: `${setting.step}` } });
+		});
 	}
+	
 
-	getForcesContent() {
-		return `
-			<!-- <div class="slider-container">
-				<label for="centerForce" id="centerForceLabel">Center Force: ${this.centerForce}</label>
-				<input type="range" id="centerForce" name="centerForce" class="slider" min="0" max="1" value="${this.centerForce}" step="0.01">
-			</div> -->
-			<div class="slider-container">
-				<label for="repelForce" id="repelForceLabel">Repel Force: ${this.repelForce}</label>
-				<input type="range" id="repelForce" name="repelForce" class="slider" min="0" max="1500" value="${this.repelForce}" step="1">
-			</div>
-			<div class="slider-container">
-				<label for="linkForce" id="linkForceLabel">Link Force: ${this.linkForce}</label>
-				<input type="range" id="linkForce" name="linkForce" class="slider" min="0" max="1" value="${this.linkForce}" step="0.01">
-			</div>
-			<div class="slider-container">
-				<label for="linkDistance" id="linkDistanceLabel">Link Distance: ${this.linkDistance}</label>
-				<input type="range" id="linkDistance" name="linkDistance" class="slider" min="10" max="200" value="${this.linkDistance}" step="1">
-			</div>
-		`;
+	getForcesContent(parent: HTMLElement) {
+		const forcesSettings = [
+			{ id: 'repelForce', label: 'Repel Force', value: this.repelForce, min: 0, max: 1500, step: 1 },
+			{ id: 'linkForce', label: 'Link Force', value: this.linkForce, min: 0, max: 1, step: 0.01 },
+			{ id: 'linkDistance', label: 'Link Distance', value: this.linkDistance, min: 10, max: 200, step: 1 }
+		];
+	
+		forcesSettings.forEach(setting => {
+			const sliderContainer = parent.createEl('div', { cls: 'slider-container' });
+			sliderContainer.createEl('label', { text: `${setting.label}: ${setting.value}`, attr: { id: `${setting.id}Label`, for: setting.id } });
+			sliderContainer.createEl('input', { attr: { type: 'range', id: setting.id, class: 'slider', name: setting.id, min: `${setting.min}`, max: `${setting.max}`, value: `${setting.value}`, step: `${setting.step}` } });
+		});
 	}
-
-	// Updated toggleDropdownMenu method
+	
 	toggleDropdownMenu() {
 		const dropdownMenu = document.querySelector('.dropdown-menu') as HTMLElement;
-		console.log('Toggling dropdown menu:', dropdownMenu);
-
+	
 		if (dropdownMenu) {
-			console.log('Dropdown menu before toggle:', dropdownMenu.style.display);
-
-			if(!dropdownMenu.style.display) {
-				dropdownMenu.style.display = 'block';
-			} else if (dropdownMenu.style.display === 'block' || dropdownMenu.style.display === '') {
-				dropdownMenu.style.display = 'none';
-			} else {
-				dropdownMenu.style.display = 'block';
-			}
-
-			console.log('Dropdown menu after toggle:', dropdownMenu.style.display);
+	
+			dropdownMenu.classList.toggle('visible');
+	
 		} else {
 			console.error('Dropdown menu element not found');
 		}
 	}
+	
 
 	setupAccordionHeaders() {
 		const accordionHeaders = document.querySelectorAll('.accordion-header');
@@ -620,22 +617,37 @@ class ScGraphItemView extends ItemView {
 		const arrowIcon = event.currentTarget.querySelector('.arrow-icon');
 		if (content && arrowIcon) {
 			content.classList.toggle('show');
-			arrowIcon.innerHTML = content.classList.contains('show') ? this.getDropdownArrow() : this.getRightArrow();
+			arrowIcon.innerHTML = ''; // Clear current content
+			arrowIcon.appendChild(content.classList.contains('show') ? this.createDropdownArrow() : this.createRightArrow());
 		}
 	}
-
-	getDropdownArrow() {
-		return `
-			<svg class="dropdown-indicator" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-				<path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-			</svg>`;
+	
+	createDropdownArrow() {
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("class", "dropdown-indicator");
+		svg.setAttribute("viewBox", "0 0 16 16");
+		svg.setAttribute("fill", "currentColor");
+	
+		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path.setAttribute("fill-rule", "evenodd");
+		path.setAttribute("d", "M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z");
+	
+		svg.appendChild(path);
+		return svg;
 	}
-
-	getRightArrow() {
-		return `
-			<svg class="dropdown-indicator" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-				<path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-			</svg>`;
+	
+	createRightArrow() {
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("class", "dropdown-indicator");
+		svg.setAttribute("viewBox", "0 0 16 16");
+		svg.setAttribute("fill", "currentColor");
+	
+		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path.setAttribute("fill-rule", "evenodd");
+		path.setAttribute("d", "M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z");
+	
+		svg.appendChild(path);
+		return svg;
 	}
 
 	setupSettingsEventListeners() {
@@ -825,7 +837,6 @@ class ScGraphItemView extends ItemView {
 	updateConnectionType(event: any) {
 		this.connectionType = event.target.value;
 		this.isChangingConnectionType = true;
-		console.log('connection type: ' + this.connectionType);
 		this.updateVisualization();
 	}
 
@@ -882,8 +893,6 @@ class ScGraphItemView extends ItemView {
 
 	closeDropdownMenu() {
 		const dropdownMenu = document.querySelector('.dropdown-menu');
-		console.log('closing menu: ', dropdownMenu);
-
 		if (dropdownMenu) dropdownMenu.classList.remove('open');
 	}
 
@@ -954,7 +963,6 @@ class ScGraphItemView extends ItemView {
 
 	updateVisualization(newScoreThreshold?: number) {
 		if (this.updatingVisualization && !this.isChangingConnectionType) {
-			console.log('Update already in progress. Skipping...');
 			this.updatingVisualization = false;
 			return;
 		}
@@ -1004,60 +1012,8 @@ class ScGraphItemView extends ItemView {
 
 		this.simulation.alpha(1).restart();
 	
-		// Center the view
-		// this.centerView(nodesData);
 		this.updatingVisualization = false;
 	}
-	
-
-	centerView(nodesData: any) {
-		// Calculate the bounding box of the nodes
-		const xExtent = d3.extent(nodesData, (d: any) => +d.x) as [number, number];
-		const yExtent = d3.extent(nodesData, (d: any) => +d.y) as [number, number];
-	
-		if (xExtent[0] === undefined || xExtent[1] === undefined || yExtent[0] === undefined || yExtent[1] === undefined) {
-			console.error("Extent calculation failed. Extents are undefined.");
-			return;
-		}
-	
-		const xMin = xExtent[0];
-		const xMax = xExtent[1];
-		const yMin = yExtent[0];
-		const yMax = yExtent[1];
-	
-		console.log('xExtent:', xExtent, 'yExtent:', yExtent);
-		console.log('xMin:', xMin, 'xMax:', xMax, 'yMin:', yMin, 'yMax:', yMax);
-	
-		const xCenter = (xMax + xMin) / 2;
-		const yCenter = (yMax + yMin) / 2;
-	
-		console.log('xCenter:', xCenter, 'yCenter:', yCenter);
-	
-		const viewWidth = this.contentEl.clientWidth;
-		const viewHeight = this.contentEl.clientHeight;
-	
-		const viewCenterX = viewWidth / 2;
-		const viewCenterY = viewHeight / 2;
-	
-		console.log('viewCenterX:', viewCenterX, 'viewCenterY:', viewCenterY);
-	
-		// Calculate scale
-		const scaleX = viewWidth / (xMax - xMin);
-		const scaleY = viewHeight / (yMax - yMin);
-		const scale = Math.min(scaleX, scaleY);
-	
-		console.log('scaleX:', scaleX, 'scaleY:', scaleY, 'scale:', scale);
-	
-		// Calculate translation
-		const translateX = viewCenterX - scale * xCenter;
-		const translateY = viewCenterY - scale * yCenter;
-	
-		console.log('translateX:', translateX, 'translateY:', translateY);
-	
-		// Apply transform
-		this.svg.call(d3.zoom().transform, d3.zoomIdentity.translate(translateX, translateY).scale(scale));
-	}
-	
 
 	simulationTickHandler() {
 		this.nodeSelection.attr('cx', (d: any) => d.x || 0).attr('cy', (d: any) => d.y || 0);
@@ -1090,12 +1046,8 @@ class ScGraphItemView extends ItemView {
 			(connection: any) => connection.score >= this.relevanceScoreThreshold);
 		this.addCentralNode();
 		this.addFilteredConnections(noteConnections);
-		console.log('Nodes after updateConnections:', this.nodes);
-		console.log('Links after updateConnections:', this.links);
-		console.log('Connections after updateConnections:', this.connections);
 		const isValid = this.validateGraphData(this.nodes, this.links);
 		if (!isValid) console.error('Graph data validation failed.');
-		else console.log('Graph data validation passed.');
 	}
 	
 	
@@ -1118,7 +1070,6 @@ class ScGraphItemView extends ItemView {
 				highlighted: false
 			});
 			this.centralNode = this.nodes[this.nodes.length - 1];
-			console.log('Central node added:', this.centralNode);
 		} else {
 			console.error(`Central node not found or already exists: ${this.centralNote.key}`);
 		}
@@ -1499,13 +1450,6 @@ class ScGraphItemView extends ItemView {
 			console.error('Simulation not initialized');
 			return;
 		}
-		const width = this.contentEl.clientWidth;
-		const height = this.contentEl.clientHeight;
-		console.log('repel force: ', this.repelForce);
-		console.log('link force: ', this.linkForce);
-		console.log('link distance: ', this.linkDistance);
-		console.log('center force: ', this.centerForce);
-
 		this.simulation
 			// .force('center', d3.forceCenter(width / 2, height / 2).strength(this.centerForce))
 			.force('charge', d3.forceManyBody().strength(-this.repelForce))
@@ -1552,10 +1496,8 @@ class ScGraphItemView extends ItemView {
 	}
 
 	updateLinkLabelSizes() {
-		console.log("link label sel1: ");
 
 		if (this.linkLabelSelection) {
-			console.log("link label sel: ", this.linkLabelSelection);
 			this.linkLabelSelection.attr('font-size', this.linkLabelSize);
 		}
 	}
@@ -1687,8 +1629,6 @@ export default class ScGraphView extends Plugin {
                 active: true,
             });
         })
-        // Perform additional things with the ribbon
-        ribbonIconEl.addClass('my-plugin-ribbon-class');
 
         // This adds a status bar item to the bottom of the app. Does not work on mobile apps.
         const statusBarItemEl = this.addStatusBarItem();
