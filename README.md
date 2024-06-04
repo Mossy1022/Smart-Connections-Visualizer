@@ -4,12 +4,6 @@
 
 Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. My goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.  
 
-The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information AND use logic with it.  We need to offload the information into a visualization in order to save the state and keep progressing in complex problems.  
-
-It's similar to solving a puzzle of Sudoku, except there's no board and you have to do it all in your head. Just imagine the difference in your ability to solve the puzzle with and without the board.  In many cases (especially the most important ones), the puzzle is too large to come close to solving without one.  No more taking random notes or voice notes and storing them away, never to see the again.  Every new piece of information you has the ability to "update" everything.  I can hear the music.. and I want nothing more to improve how we communicate and make better decisions.
-
-![Sudoku](Sudoku.png)
-
 ## Features
 
 - **Dynamic Force-Directed Graph:** Visualize connections as a force-directed graph where nodes represent notes or specific excerpts from them and edges represent connections.  
@@ -99,13 +93,21 @@ TLDR: I was born for this.
 
 Lastly, as passionate as I am about this, I'm also developing a device that allows people to control technology using the motion capture of their tongue– effectively giving us a 5th limb that will allow us to be a universal, hands-free remote.  Just so you're not "visualizing" your mouth open with tongue moving around, you can have your mouth completely closed and it looks like mind control. We're hoping that it'll be able to do wonders for those with phyiscal limitations who can't use technology as effectively.  We are in the funding phase, but have developed several functional prototypes.  You can find out more at: [Glosdex.com](https://glosdex.com/) 
 
-## The Future
+## Vision
 
-I will begin adding future items here in a bit, but I can tell you there is ALOT to be done here that should drastically change how we go about note taking and note making.  The ultimate mission for this is to essentially do away with text-based organization and instead visualize information in a saved state that's dynamically arranged by whatever context the user desires (like a prompt).  A point where as you add on more notes, the state updates in a single visualization and you can see how the new information impacts the old through various relationships (i.e supportive vs contradictory statements related to the context), rather than have everything in separate folders even though technically everything is connected below a certain threshold.
+The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information AND use logic with it.  We need to offload the information into a visualization in order to save the state (your progress) and keep progressing in complex problems.  
 
-I believe this would also eliminate the "hallucination" problem with AI where the saved state is the visualization and independent on whatever it is the AI remembers.  It will always have the right context! 
+It's similar to solving a puzzle of Sudoku, except there's no board and you have to do it all in your head. Just imagine the difference in your ability to solve the puzzle with and without the board. Now think of virtually any problem as a puzzle that we haven't made the board for! In many cases (especially the most important ones), your puzzle or problems can be too large to even come close to solving without one.  
 
-The point is to see everything you couldnt see before and watch what happens when you update information as it cascades and affects all other connections.  We're about to enter a realm of exponentially increased problem solving through visualizing our text-based information and the possibilites are endless!  I'm spending a lot of time on this on top of my other jobs, so any support would be more than appreciated to give me more time to keep going at it :) 
+![Sudoku](Sudoku.png)
+
+Eventually with this plugin, I want to see no more taking notes or voice notes only for them to never to be see again. I'm apparently not disiplined enough to follow a strict structure of note taking for too long and things just kind of fall off.  On top of it being my literal obsession, this is one of the main driving forces behind me wanting to create this plugin.  It's not where it needs to be yet, but it's a good start and could be that much better with your help :) I can hear the music.. and I'm very interested to see who else can too!
+
+The ultimate mission for this is to almost do away with text-based organization and instead visualize information in a saved state that's dynamically arranged by whatever context the user desires (like a prompt).  A point where as you add on more notes, the state updates in a single visualization and you can see how the new information impacts the old through various relationships (i.e supportive vs contradictory statements related to the context), rather than have everything in separate folders even though technically everything is connected below a certain threshold.
+
+I believe this would also eliminate the "hallucination" problem with AI where the saved state/knowledge base/memory is the visualization and independent on whatever it is the AI remembers.  It will always have the right context that you've both worked on, and more importatntly, **you** approved of.  
+
+The point is to see everything you couldnt see before and watch what happens when you update information as it cascades and affects all other connections.  We're about to enter a realm of exponentially increased problem solving through visualizing our text-based information and the possibilites are endless!  I've been spending a lot of time on this on top of my other jobs, so any support would be more than appreciated to allow me more time to keep going at it :) 
 
 The list so far:
 - Change node color by variable 
