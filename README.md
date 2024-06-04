@@ -1,5 +1,7 @@
 # Smart Connections Visualizer `v1.0`
 
+![App Demo](Intro.gif)
+
 Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. My goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information.  
 
 The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information AND use logic with it.  We need to offload the information into a visualization in order to save the state and keep progressing in complex problems.  
@@ -7,9 +9,6 @@ The text communication format between us and AI is **incredibly** inefficient, a
 It's similar to solving a puzzle of Sudoku, except there's no board and you have to do it all in your head. Just imagine the difference in your ability to solve the puzzle with and without the board.  In many cases (especially the most important ones), the puzzle is too large to come close to solving without one.  No more taking random notes or voice notes and storing them away, never to see the again.  Every new piece of information you has the ability to "update" everything.  I can hear the music.. and I want nothing more to improve how we communicate and make better decisions.
 
 ![Sudoku](Sudoku.png)
-
-
-![App Demo](Intro.gif)
 
 ## Features
 
