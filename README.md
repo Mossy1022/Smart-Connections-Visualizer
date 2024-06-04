@@ -109,13 +109,6 @@ I believe this would also eliminate the "hallucination" problem with AI where th
 
 The point is to see everything you couldnt see before and watch what happens when you update information as it cascades and affects all other connections.  We're about to enter a realm of exponentially increased problem solving through visualizing our text-based information and the possibilites are endless!  I've been spending a lot of time on this on top of my other jobs, so any support would be more than appreciated to allow me more time to keep going at it :) 
 
-The list so far:
-- Change node color by variable 
-- Change link color by variable
-- Change node shape by variable
-- Direcitonality and Bidirectionality on links
-- Relational data on links (i.e supportive, contradictory, dependency, etc.)
-- Node types (i.e detail, opinion, concept etc.)
 
 ---
 
