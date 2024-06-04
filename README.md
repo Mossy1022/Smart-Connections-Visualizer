@@ -28,7 +28,8 @@ Once installed, the Smart Connections Visualizer Plugin provides an intuitive in
 To open the Visualizer View:
 
 1. Select the ribbon icon to the left that will display "Smart Connections Visualizer"
-2. The visualization pane will appear, displaying a dynamic force-directed graph of your notes and their connections.
+2. The visualization pane will appear.
+3. Select a note and you'll see a dynamic force-directed graph of your notes and their connections displayed.
 
 ### Interacting with the Visualization
 
