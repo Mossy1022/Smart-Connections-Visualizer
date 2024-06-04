@@ -63,7 +63,7 @@ Access the settings menu by clicking the gear icon in the top right corner of th
 
 ## Vision
 
-The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information AND use logic with it.  We need to offload the information into a visualization in order to save the state (your progress) and keep progressing in complex problems.  
+The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information AND use logic with it to solve our more complex problems.  We need to offload the information into a visualization in order to save the state (your progress) and keep progressing in complex problems.  
 
 Imagine solving a puzzle of Sudoku, except there's no board.  That's what we're doing right now when communicating, arguing, solving problems, etc.  You have to memorize all the factors in the starting position, all the moves you make, all the relationships that change between everything based on every single move, and so on..  For those really complex problems/puzzles we have in life, just imagine the difference in our ability to solve these problems WITH the board. The puzzle is there– we just haven't made the board for yet!
 
