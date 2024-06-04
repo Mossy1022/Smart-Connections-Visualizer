@@ -61,7 +61,33 @@ Access the settings menu by clicking the gear icon in the top right corner of th
   <img src="ForceSettings.gif" alt="Demo of the application" width="400" height="300" />
 </span>
 
+## Vision
 
+The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information AND use logic with it.  We need to offload the information into a visualization in order to save the state (your progress) and keep progressing in complex problems.  
+
+Imagine solving a puzzle of Sudoku, except there's no board.  That's what we're doing right now when communicating, arguing, solving problems, etc.  You have to memorize all the factors in the starting position, all the moves you make, all the relationships that change between everything based on every single move, and so on..  For those really complex problems/puzzles we have in life, just imagine the difference in our ability to solve these problems WITH the board. The puzzle is there– we just haven't made the board for yet!
+
+![Sudoku](Sudoku.png)
+
+Eventually with this plugin, I want to see no more taking notes or voice notes only for them to never to be see again. I'm apparently not disciplined enough to follow a strict structure of note taking for too long and things just kind of fall off.  On top of it being my literal obsession, this is one of the main driving forces behind me wanting to create this plugin.  It's not where it needs to be yet, but it's a good start and could be that much better with your help :) I can hear the music.. and I'm very interested to see who else can too!
+
+The ultimate mission for this is to almost do away with text-based organization and instead visualize information in a saved state that's dynamically arranged by whatever context the user desires (like a prompt).  A point where as you add on more notes, the state updates in a single visualization and you can see how the new information impacts the old through various relationships (i.e supportive vs contradictory statements related to the context), rather than have everything in separate folders even though technically everything is connected below a certain threshold.
+
+I believe this would also eliminate the "hallucination" problem with AI where the saved state/knowledge base/memory is the visualization and independent on whatever it is the AI remembers.  It will always have the right context that you've both worked on, and more importatntly, **you** approved of.  
+
+The point is to see everything you couldnt see before and watch what happens when you update information as it cascades and affects all other connections.  We're about to enter a realm of exponentially increased problem solving through visualizing our text-based information and the possibilites are endless!  I've been spending a lot of time on this on top of my other jobs, so any support would be more than appreciated to allow me more time to keep going at it :) 
+
+## About Me
+
+Hello there! Name's Evan. I'm a sr. software developer/architect consultant for General Dynamics, contracted out to the CDC to manage and develop data visualization tools.  I've been obsessed about what's transpiring with AI for the last 15 years, knowing that it would soon change the world like this.
+Inspired by Brian (creator of Smart Connections), I started an AI consulting company "Evan's Oasis" where I audit business workflows of clients and suggest AI tools and practices to significantly increase decision making, productivity, and quality– all while cutting down on time and money needed to run a business.  
+
+I've continuosly been giving webinars to both CDC and GDIT on the most significant AI updates, as well as in-person local community seminars around the Tampa Bay area. 
+One of my life's main questlines is to inspire people to take advantage of the outragous new abilities we have with AI and how we can use them to help us in our every day lives.
+
+TLDR: I was born for this.
+
+Lastly, as passionate as I am about this, I'm also developing a device that allows people to control technology using the motion capture of their tongue– effectively giving us a 5th limb that will allow us to be a universal, hands-free remote.  Just so you're not "visualizing" your mouth open with tongue moving around, you can have your mouth completely closed and it looks like mind control. We're hoping that it'll be able to do wonders for those with phyiscal limitations who can't use technology as effectively.  We are in the funding phase, but have developed several functional prototypes.  You can find out more at: [Glosdex.com](https://glosdex.com/) 
 
 ## Community and Support
 
@@ -80,34 +106,6 @@ Special thanks to Brian, the developer behind [Smart Connections](https://github
 ## License
 
 The Smart Connections Visualization Plugin is open-source and available under the MIT License. Contributions are welcome!
-
-## About Me
-
-Hello there! Name's Evan. I'm a sr. software developer/architect consultant for General Dynamics, contracted out to the CDC to manage and develop data visualization tools.  I've been obsessed about what's transpiring with AI for the last 15 years, knowing that it would soon change the world like this.
-Inspired by Brian (creator of Smart Connections), I started an AI consulting company "Evan's Oasis" where I audit business workflows of clients and suggest AI tools and practices to significantly increase decision making, productivity, and quality– all while cutting down on time and money needed to run a business.  
-
-I've continuosly been giving webinars to both CDC and GDIT on the most significant AI updates, as well as in-person local community seminars around the Tampa Bay area. 
-One of my life's main questlines is to inspire people to take advantage of the outragous new abilities we have with AI and how we can use them to help us in our every day lives.
-
-TLDR: I was born for this.
-
-Lastly, as passionate as I am about this, I'm also developing a device that allows people to control technology using the motion capture of their tongue– effectively giving us a 5th limb that will allow us to be a universal, hands-free remote.  Just so you're not "visualizing" your mouth open with tongue moving around, you can have your mouth completely closed and it looks like mind control. We're hoping that it'll be able to do wonders for those with phyiscal limitations who can't use technology as effectively.  We are in the funding phase, but have developed several functional prototypes.  You can find out more at: [Glosdex.com](https://glosdex.com/) 
-
-## Vision
-
-The text communication format between us and AI is **incredibly** inefficient, and I believe data visualization tools like this will not only exponentially enhance our ability to communicate with AI, but create a new discovery and decision making process that'll change how we go about virtually everything we do.  Our brains can't physically retain all the information AND use logic with it.  We need to offload the information into a visualization in order to save the state (your progress) and keep progressing in complex problems.  
-
-Imagine solving a puzzle of Sudoku, except there's no board.  That's what we're doing right now when communicating, arguing, solving problems, etc.  You have to memorize all the factors in the starting position, all the moves you make, all the relationships that change between everything based on every single move, and so on..  For those really complex problems/puzzles we have in life, just imagine the difference in our ability to solve these problems WITH the board. The puzzle is there– we just haven't made the board for yet!
-
-![Sudoku](Sudoku.png)
-
-Eventually with this plugin, I want to see no more taking notes or voice notes only for them to never to be see again. I'm apparently not disciplined enough to follow a strict structure of note taking for too long and things just kind of fall off.  On top of it being my literal obsession, this is one of the main driving forces behind me wanting to create this plugin.  It's not where it needs to be yet, but it's a good start and could be that much better with your help :) I can hear the music.. and I'm very interested to see who else can too!
-
-The ultimate mission for this is to almost do away with text-based organization and instead visualize information in a saved state that's dynamically arranged by whatever context the user desires (like a prompt).  A point where as you add on more notes, the state updates in a single visualization and you can see how the new information impacts the old through various relationships (i.e supportive vs contradictory statements related to the context), rather than have everything in separate folders even though technically everything is connected below a certain threshold.
-
-I believe this would also eliminate the "hallucination" problem with AI where the saved state/knowledge base/memory is the visualization and independent on whatever it is the AI remembers.  It will always have the right context that you've both worked on, and more importatntly, **you** approved of.  
-
-The point is to see everything you couldnt see before and watch what happens when you update information as it cascades and affects all other connections.  We're about to enter a realm of exponentially increased problem solving through visualizing our text-based information and the possibilites are endless!  I've been spending a lot of time on this on top of my other jobs, so any support would be more than appreciated to allow me more time to keep going at it :) 
 
 
 ---
