@@ -83,7 +83,7 @@ The Smart Connections Visualization Plugin is open-source and available under th
 
 ## About Me
 
-Hello there! Name's Evan Moscoso, and I'm a senior software developer/architect consultant for General Dynamics, contracted out to the CDC to manage and develop data visualization tools.  I've been obsessed about what's transpiring with AI for the last 15 years, knowing that it would soon change the world like this.
+Hello there! Name's Evan. I'm a sr. software developer/architect consultant for General Dynamics, contracted out to the CDC to manage and develop data visualization tools.  I've been obsessed about what's transpiring with AI for the last 15 years, knowing that it would soon change the world like this.
 Inspired by Brian (creator of Smart Connections), I started an AI consulting company "Evan's Oasis" where I audit business workflows of clients and suggest AI tools and practices to significantly increase decision making, productivity, and quality– all while cutting down on time and money needed to run a business.  
 
 I've continuosly been giving webinars to both CDC and GDIT on the most significant AI updates, as well as in-person local community seminars around the Tampa Bay area. 
