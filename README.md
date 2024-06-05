@@ -80,7 +80,9 @@ The goal is to see everything you couldn't see before and observe how updating i
 
 ## About Me
 
-Hello there! Name's Evan. I'm a senior software developer/architect consultant, currently managing and developing data visualization tools for the CDC.  I've been obsessed about what's transpiring with AI for the last 12-ish years, fully aware that it would soon completely change the world.
+Hello there! Name's Evan :D 
+
+I'm a senior software developer/architect consultant, currently managing and developing data visualization tools for the CDC.  I've been obsessed about what's transpiring with AI for the last 12-ish years, fully aware that it would soon completely change the world.
 
 Inspired by Brian, the creator of Smart Connections, I started an AI consulting company called "Evan's Oasis." At Evan's Oasis, I audit business workflows for clients and recommend AI tools and practices that significantly enhance decision-making, productivity, and quality—while reducing the time and money needed to run a business.
 
