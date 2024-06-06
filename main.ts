@@ -11,8 +11,8 @@ const DEFAULT_SETTINGS: ScGraphViewSettings = {
 
 
 const DEFAULT_NETWORK_SETTINGS : any = {
-	scoreThreshold: 0.6,
-	nodeSize: 3,
+	scoreThreshold: 0.5,
+	nodeSize: 4,
 	linkThickness: 0.3,
 	repelForce: 400,
 	linkForce: 0.4,
@@ -38,13 +38,13 @@ class ScGraphItemView extends ItemView {
 	centralNode: any;
 	connectionType = 'block';
     isHovering: boolean; 
-	relevanceScoreThreshold = 0.6;
-	nodeSize = 3;
+	relevanceScoreThreshold = 0.5;
+	nodeSize = 4;
 	linkThickness = 0.3;
 	repelForce = 400;
 	linkForce = 0.4;
 	linkDistance = 70;
-	centerForce = 0.1;
+	centerForce = 0.3;
 	textFadeThreshold = 1.1;
 	minScore = 1;
 	maxScore = 0;
@@ -76,6 +76,9 @@ class ScGraphItemView extends ItemView {
 	centerHighlighted = false;
 	simulation: any;
 	dragging = false;
+	highlightedNodeId = '-1';
+	currentNoteChanging = false;
+	isFiltering = false;
 	
 
     constructor(leaf: WorkspaceLeaf) {
@@ -139,9 +142,13 @@ class ScGraphItemView extends ItemView {
 	}
 
 	highlightNode(node: any) {
+		
         if (node.id === this.centralNode.id) {
             this.centerHighlighted = true;
         }
+
+		this.highlightedNodeId = node.id;
+
         this.nodeSelection.each((d: any) => {
             if (d.id !== this.centralNode.id) {
                 d.highlighted = (d.id === node.id || this.validatedLinks.some((link: any) =>
@@ -151,7 +158,7 @@ class ScGraphItemView extends ItemView {
         });
         this.updateNodeAppearance();
         this.updateLinkAppearance(node);
-        this.updateLabelAppearance(node, true); // Pass true to indicate label movement
+        this.updateLabelAppearance(node);
         this.updateLinkLabelAppearance(node);
     }
 	
@@ -169,16 +176,10 @@ class ScGraphItemView extends ItemView {
 			.attr('opacity', (d: any) => (d.source.id === node.id || d.target.id === node.id) ? 1 : 0.1);
 	}
 
-	updateLabelAppearance(node: any, moveDown: boolean) {
+	updateLabelAppearance(node: any) {
 		this.labelSelection.transition().duration(500)
 			.attr('opacity', (d: any) => this.getLabelOpacity(d, node))
-			.attr('y', (d: any) => {
-				if (node && d.id === node.id && moveDown) {
-					return d.y + 8; // Move label 8px down if node is highlighted
-				}
-				return d.y; // Reset to original position
-			})
-			.text((d: any) => node && d.id === node.id ? this.formatLabel(d.name, false) : this.formatLabel(d.name, true));
+			.text((d: any) =>  d.id === this.highlightedNodeId ? this.formatLabel(d.name, false) : this.formatLabel(d.name, true));
 	}
 	
 	getLabelOpacity(d: any, node: any) {
@@ -186,24 +187,30 @@ class ScGraphItemView extends ItemView {
 			return 1; // Reset to full opacity if no node is highlighted
 		}
 		return (d.id === node.id || this.validatedLinks.some((link: any) =>
-			(link.source.id === node.id && link.target.id === d.id))) ? 1 : 0.1;
+			(link.source.id === node.id && link.target.id === d.id)) || d.id == this.centralNode.id) ? 1 : 0.1;
 	}
 	
 	updateLinkLabelAppearance(node: any) {
 		this.linkLabelSelection.transition().duration(500)
-			.attr('opacity', (d: any) => (d.source.id === node.id || d.target.id === node.id) ? 1 : 0);
+			.attr('opacity', (d: any) => (d.source.id === node.id || d.target.id === node.id) ? 1 : 0)
+			.text((d: any) => d.id === this.highlightedNodeId ? this.formatLabel(d.name, false) : this.formatLabel(d.name, true));
 	}
 	
 
-	unhighlightNode() {
+	unhighlightNode(node : any) {
+
+		// Reset highlighted nodeid
+		this.highlightedNodeId = '-1';
+
         this.nodeSelection.each((d: any) => {
             if (d.id !== this.centralNode.id) d.highlighted = false;
         });
+
         this.updateNodeAppearance();
         this.resetLinkAppearance();
         this.resetLabelAppearance();
         this.resetLinkLabelAppearance();
-        this.updateLabelAppearance(null, false); // Pass false to reset label position
+        this.updateLabelAppearance(null); // Pass false to reset label position
     }
 	
 
@@ -226,16 +233,33 @@ class ScGraphItemView extends ItemView {
 	}
 
 	extractLabel(path: string) {
-		const parts = path.split('#');
-		let label = parts[parts.length - 1];
-		return label.replace(/[\[\]]/g, '');
+		let label = path;
+
+		// Remove the anchor part if it exists
+		if (path && path.includes('#')) {
+			const parts = path.split('#');
+			label = parts[parts.length - 1]; // Take the last part after splitting by '#'
+		} else if (path) {
+			label = path.split('/').pop() || label; // Take the last part after splitting by '/'
+		} else {
+			return '';
+		}
+	
+		// Remove brackets if they exist
+		label = label.replace(/[\[\]]/g, '');
+	
+		// Remove file extension if it exists
+		label = label.replace(/\.[^/.]+$/, '');
+	
+		return label;
+		
 	}
 
 	truncateLabel(label: string) {
 		return label.length > this.maxLabelCharacters ? label.slice(0, this.maxLabelCharacters) + '...' : label;
 	}
 
-	get smartEnv() { return window.SmartSearch?.main?.env; }
+	get env() { return window.SmartSearch?.main?.env; }
 	get smartNotes() { return window.SmartSearch?.main?.env?.smart_notes?.items; }
 	
 
@@ -247,7 +271,7 @@ class ScGraphItemView extends ItemView {
 
 	async render() {
 		// wait until this.smartNotes is available
-		while (!this.smartEnv?.entities_loaded) {
+		while (!this.env?.entities_loaded) {
 			await new Promise(resolve => setTimeout(resolve, 2000));
 		}
 		this.contentEl.empty();
@@ -268,7 +292,7 @@ class ScGraphItemView extends ItemView {
 		const delay = 2000; // Delay in milliseconds between retries
 	
 		for (let attempt = 0; attempt < maxRetries; attempt++) {
-			if (this.smartEnv?.entities_loaded) {
+			if (this.env?.entities_loaded) {
 				return;
 			}
 			await new Promise(resolve => setTimeout(resolve, delay));
@@ -327,6 +351,7 @@ class ScGraphItemView extends ItemView {
 			.attr('height', '98%')
 			.attr('viewBox', `0 0 ${width} ${height}`)
 			.attr('preserveAspectRatio', 'xMidYMid meet')
+			.style('background', '#2d3039')
 			.call(d3.zoom().scaleExtent([0.1, 10]).on('zoom', this.onZoom.bind(this)));
 	}
 
@@ -341,7 +366,7 @@ class ScGraphItemView extends ItemView {
 
 	initializeSimulation(width: number, height: number) {
 		this.simulation = d3.forceSimulation()
-			.force('center', d3.forceCenter(width / 2, height / 2).strength(this.centerForce).strength(0.1))
+			.force('center', d3.forceCenter(width / 2, height / 2).strength(this.centerForce))
 			.force('charge', d3.forceManyBody().strength(-this.repelForce))
 			// .force('link', d3.forceLink().id((d: any) => d.id).distance(this.linkDistance).strength(this.linkForce))
 			.force('link', d3.forceLink()
@@ -353,6 +378,13 @@ class ScGraphItemView extends ItemView {
 
 		 // Add the custom force for labels
 		  this.simulation.force('labels', this.avoidLabelCollisions.bind(this));
+
+		// Disable the centering force after the initial positioning
+		// this.simulation.on('end', () => {
+		// 	console.log('Simulation ended, center force removed.');
+		// 	this.simulation.force('center', null); // Remove the center force after initial stabilization
+		// });
+
 	}
 
 	setupNodesAndLinks(svgGroup: any) {
@@ -360,34 +392,36 @@ class ScGraphItemView extends ItemView {
 		this.linkSelection = this.createLinks(svgGroup);
 	}
 
+	// Ensure node labels dont collide with any elements
 	avoidLabelCollisions() {
 		const padding = 5; // Adjust padding as needed
 		return (alpha: number) => {
-			for (let i = 0; i < this.labelSelection.size(); ++i) {
-				const label = this.labelSelection.nodes()[i];
-				const node = d3.select(label).datum();
-				for (let j = 0; j < this.labelSelection.size(); ++j) {
-					if (i === j) continue;
-					const otherLabel = this.labelSelection.nodes()[j];
-					const otherNode = d3.select(otherLabel).datum();
+			const quadtree = d3.quadtree()
+				.x((d: any) => d.x)
+				.y((d: any) => d.y)
+				.addAll(this.labelSelection.data());
 	
-					const dx = (node as any).x - (otherNode as any).x;
-					const dy = (node as any).y - (otherNode as any).y;
-					const distance = Math.sqrt(dx * dx + dy * dy);
-					const minDistance = padding + this.nodeLabelSize;
+			this.labelSelection.each((d: any) => {
+				const radius = d.radius + padding; // Assuming each label has a radius, adjust as necessary
+				const nx1 = d.x - radius, nx2 = d.x + radius, ny1 = d.y - radius, ny2 = d.y + radius;
 	
-					if (distance < minDistance) {
-						const angle = Math.atan2(dy, dx);
-						const moveX = (minDistance - distance) * Math.cos(angle);
-						const moveY = (minDistance - distance) * Math.sin(angle);
-	
-						(node as any).x += moveX * alpha;
-						(node as any).y += moveY * alpha;
-						(otherNode as any).x -= moveX * alpha;
-						(otherNode as any).y -= moveY * alpha;
+				quadtree.visit((quad, x1, y1, x2, y2) => {
+					if ('data' in quad && quad.data && (quad.data !== d)) {						
+						let x = d.x - (quad.data as any).x,
+							y = d.y - (quad.data as any).y,
+							l = Math.sqrt(x * x + y * y),
+							r = radius + (quad.data as any).radius;
+						if (l < r) {
+							l = (l - r) / l * alpha;
+							d.x -= x *= l;
+							d.y -= y *= l;
+							(quad.data as any).x += x;
+							(quad.data as any).y += y;
+						}
 					}
-				}
-			}
+					return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+				});
+			});
 		};
 	}
 	
@@ -400,6 +434,7 @@ class ScGraphItemView extends ItemView {
 			.enter().append('circle')
 			.attr('r', 20)
 			.attr('fill', 'blue')
+			.style('cursor', 'pointer') // Ensure cursor is pointer
 			.style('pointer-events', 'all') // Ensure nodes can capture pointer events
 			.call(d3.drag().on('start', this.onDragStart.bind(this))
 				.on('drag', this.onDrag.bind(this))
@@ -430,17 +465,19 @@ class ScGraphItemView extends ItemView {
 			.on('click', this.onSVGClick.bind(this));
 	}
 
+	// TODO: Add back in when ready for multiselect
 	onMouseDown(event: any) {
-		if (!event.ctrlKey) this.clearSelections();
-		this.startBoxSelection(event);
+		// if (!event.ctrlKey) this.clearSelections();
+		// this.startBoxSelection(event);
 	}
 
 	onMouseMove(event: any) {
-		this.updateBoxSelection(event);
+		// event.stopPropagation();
+		// this.updateBoxSelection(event);
 	}
 
 	onMouseUp() {
-		this.endBoxSelection();
+		// this.endBoxSelection();
 	}
 
 	onSVGClick(event: any) {
@@ -477,12 +514,6 @@ class ScGraphItemView extends ItemView {
 		}
 	}
 
-	createSettingsIcon() {
-		const settingsIcon = this.contentEl.createEl('div', { cls: 'settings-icon' });
-		settingsIcon.createEl('span', { text: '⚙' }); // Unicode character for settings icon
-		settingsIcon.addEventListener('click', this.toggleDropdownMenu);
-	}
-
 	createDropdownMenu() {
 		const dropdownMenu = this.contentEl.createEl('div', { cls: 'dropdown-menu' });
 		this.buildDropdownMenuContent(dropdownMenu);
@@ -490,9 +521,19 @@ class ScGraphItemView extends ItemView {
 
 	buildDropdownMenuContent(dropdownMenu: HTMLElement) {
 		const menuHeader = dropdownMenu.createEl('div', { cls: 'menu-header' });
-		menuHeader.createEl('div', { cls: 'icon', attr: { id: 'refresh-icon' }, text: '⟳' });
-		menuHeader.createEl('div', { cls: 'icon', attr: { id: 'close-icon' }, text: '✖' });
-	
+		
+		// Append the refresh icon created by createRefreshIcon
+		const refreshIcon = this.createRefreshIcon();
+		refreshIcon.classList.add('icon'); // Ensure it has the 'icon' class for styling
+		refreshIcon.setAttribute('id', 'refresh-icon'); // Set the ID for specific styling or selection
+		menuHeader.appendChild(refreshIcon);	
+		
+		// Append the new X icon created by createNewXIcon
+		const xIcon = this.createNewXIcon();
+		xIcon.classList.add('icon'); // Ensure it has the 'icon' class for styling
+		xIcon.setAttribute('id', 'close-icon'); // Set the ID for specific styling or selection
+		menuHeader.appendChild(xIcon);
+  
 		this.addAccordionItem(dropdownMenu, 'Filters', this.getFiltersContent.bind(this));
 		this.addAccordionItem(dropdownMenu, 'Display', this.getDisplayContent.bind(this));
 		this.addAccordionItem(dropdownMenu, 'Forces', this.getForcesContent.bind(this));
@@ -518,6 +559,7 @@ class ScGraphItemView extends ItemView {
 			text: `Min Relevance: ${(this.relevanceScoreThreshold * 100).toFixed(0)}%`, 
 			attr: { id: 'scoreThresholdLabel', for: 'scoreThreshold' } 
 		});
+
 		const relevanceSlider = sliderContainer1.createEl('input', { 
 			attr: { 
 				type: 'range', 
@@ -648,6 +690,97 @@ class ScGraphItemView extends ItemView {
 	
 		svg.appendChild(path);
 		return svg;
+	}
+
+	createSettingsIcon() {
+		// Create the container div for the settings icon
+		const settingsIcon = this.contentEl.createEl('div', {
+			cls: ['settings-icon', ],
+			attr: { 'aria-label': 'Open graph settings' }
+		});
+	
+		// Create SVG element for settings icon
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("width", "24");
+		svg.setAttribute("height", "24");
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("fill", "none");
+		svg.setAttribute("stroke", "currentColor");
+		svg.setAttribute("stroke-width", "2");
+		svg.setAttribute("stroke-linecap", "round");
+		svg.setAttribute("stroke-linejoin", "round");
+		svg.setAttribute("class", "svg-icon lucide-settings");
+	
+		// Create path element for settings icon
+		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path.setAttribute("d", "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z");
+		svg.appendChild(path);
+	
+		// Create circle element for settings icon
+		const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+		circle.setAttribute("cx", "12");
+		circle.setAttribute("cy", "12");
+		circle.setAttribute("r", "3");
+		svg.appendChild(circle);
+	
+		// Append SVG to settings icon container
+		settingsIcon.appendChild(svg);
+	
+		settingsIcon.addEventListener('click', this.toggleDropdownMenu);
+	}
+
+	createRefreshIcon() {
+		const refreshIcon = this.contentEl.createEl('div', { cls: 'refresh-icon' });
+	
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("width", "24");
+		svg.setAttribute("height", "24");
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("fill", "none");
+		svg.setAttribute("stroke", "currentColor");
+		svg.setAttribute("stroke-width", "2");
+		svg.setAttribute("stroke-linecap", "round");
+		svg.setAttribute("stroke-linejoin", "round");
+		svg.setAttribute("class", "svg-icon lucide-rotate-ccw");
+	
+		const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path1.setAttribute("d", "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8");
+		svg.appendChild(path1);
+	
+		const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path2.setAttribute("d", "M3 3v5h5");
+		svg.appendChild(path2);
+	
+		refreshIcon.appendChild(svg);
+	
+		return refreshIcon; // Return the complete icon element
+	}
+
+	createNewXIcon() {
+		const xIcon = this.contentEl.createEl('div', { cls: 'x-icon' });
+	
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("width", "24");
+		svg.setAttribute("height", "24");
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("fill", "none");
+		svg.setAttribute("stroke", "currentColor");
+		svg.setAttribute("stroke-width", "2");
+		svg.setAttribute("stroke-linecap", "round");
+		svg.setAttribute("stroke-linejoin", "round");
+		svg.setAttribute("class", "svg-icon lucide-x");
+	
+		const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path1.setAttribute("d", "M18 6 6 18");
+		svg.appendChild(path1);
+	
+		const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path2.setAttribute("d", "m6 6 12 12");
+		svg.appendChild(path2);
+	
+		xIcon.appendChild(svg);
+	
+		return xIcon; // Return the complete icon element
 	}
 
 	setupSettingsEventListeners() {
@@ -915,11 +1048,35 @@ class ScGraphItemView extends ItemView {
 		this.maxLabelCharacters = DEFAULT_NETWORK_SETTINGS.maxLabelCharacters;
 		this.linkLabelSize = DEFAULT_NETWORK_SETTINGS.linkLabelSize;
 		this.nodeLabelSize = DEFAULT_NETWORK_SETTINGS.nodeLabelSize;
+		this.updateLabelsToDefaults();
 		this.updateSliders();
 		this.updateNodeSizes();
 		this.updateLinkThickness();
 		this.updateSimulationForces();
 		this.updateVisualization(this.relevanceScoreThreshold);
+	}
+
+	updateLabelsToDefaults() {
+		const labels = {
+			'scoreThresholdLabel': `Min Relevance: ${(this.relevanceScoreThreshold * 100).toFixed(0)}%`,
+			'nodeSizeLabel': `Node Size: ${this.nodeSize}`,
+			'maxLabelCharactersLabel': `Max Label Characters: ${this.maxLabelCharacters}`,
+			'linkLabelSizeLabel': `Link Label Size: ${this.linkLabelSize}`,
+			'nodeLabelSizeLabel': `Node Label Size: ${this.nodeLabelSize}`,
+			'minLinkThicknessLabel': `Min Link Thickness: ${this.minLinkThickness}`,
+			'maxLinkThicknessLabel': `Max Link Thickness: ${this.maxLinkThickness}`,
+			'fadeThresholdLabel': `Text Fade Threshold: ${this.textFadeThreshold}`,
+			'repelForceLabel': `Repel Force: ${this.repelForce}`,
+			'linkForceLabel': `Link Force: ${this.linkForce}`,
+			'linkDistanceLabel': `Link Distance: ${this.linkDistance}`
+		};
+	
+		for (const [id, text] of Object.entries(labels)) {
+			const label = document.getElementById(id);
+			if (label) {
+				label.textContent = text;
+			}
+		}
 	}
 
 	updateSliders() {
@@ -956,6 +1113,7 @@ class ScGraphItemView extends ItemView {
 		this.app.workspace.on('file-open', (file) => {
 			if (file && (this.currentNoteKey !== file.path) && !this.isHovering) {
 				this.currentNoteKey = file.path;
+				this.currentNoteChanging = true;
 				this.render();
 			}
 		});
@@ -964,6 +1122,7 @@ class ScGraphItemView extends ItemView {
 	updateVisualization(newScoreThreshold?: number) {
 		if (this.updatingVisualization && !this.isChangingConnectionType) {
 			this.updatingVisualization = false;
+			this.currentNoteChanging = false;
 			return;
 		}
 		this.isChangingConnectionType = false;
@@ -996,14 +1155,21 @@ class ScGraphItemView extends ItemView {
 		if (nodesData.length === 0 || this.validatedLinks.length === 0) {
 			this.updatingVisualization = false;
 			console.warn('No nodes or links to display after filtering. Aborting update.');
+			 // Clear the existing nodes and links from the visualization
+			 this.nodeSelection = this.svgGroup.select('g.nodes').selectAll('circle').data([]).exit().remove();
+			 this.linkSelection = this.svgGroup.select('g.links').selectAll('line').data([]).exit().remove();
+			 this.linkLabelSelection = this.svgGroup.select('g.link-labels').selectAll('text').data([]).exit().remove();
+			 this.labelSelection = this.svgGroup.select('g.node-labels').selectAll('text').data([]).exit().remove();
 			return;
 		}
 	
 		this.updateNodeAndLinkSelection(nodesData);
 		
-		if (!this.simulation) {
+		if (!this.simulation || this.currentNoteChanging || this.isFiltering) {
 			const { width, height } = this.getSVGDimensions();
 			this.initializeSimulation(width, height);
+			this.currentNoteChanging = false;
+			this.isFiltering = false;
 		}
 	
 		this.simulation.nodes(nodesData).on('tick', this.simulationTickHandler.bind(this));
@@ -1016,19 +1182,14 @@ class ScGraphItemView extends ItemView {
 	}
 
 	simulationTickHandler() {
-		this.nodeSelection.attr('cx', (d: any) => d.x || 0).attr('cy', (d: any) => d.y || 0);
-		this.linkSelection.attr('x1', (d: any) => d.source.x || 0).attr('y1', (d: any) => d.source.y || 0)
+		this.nodeSelection.attr('cx', (d: any) => d.x).attr('cy', (d: any) => d.y).style('cursor', 'pointer');
+		this.linkSelection.attr('x1', (d: any) => d.source.x || 0).attr('y1', (d: any) => d.source.y || 0).style('cursor', 'pointer')
 			.attr('x2', (d: any) => d.target.x || 0).attr('y2', (d: any) => d.target.y || 0);
 		this.linkLabelSelection.attr('x', (d: any) => ((d.source.x + d.target.x) / 2) || 0)
 			.attr('y', (d: any) => ((d.source.y + d.target.y) / 2) || 0);
 		this.labelSelection
-			.attr('x', (d: any) => d.x || 0)
-			.attr('y', (d: any) => {
-				if (d.highlighted) {
-					return d.y + 8; // Keep label 8px down if node is highlighted
-				}
-				return d.y;
-			});
+			.attr('x', (d: any) => d.x)
+			.attr('y', (d: any) => d.y);
 	
 	}
 	
@@ -1206,6 +1367,7 @@ class ScGraphItemView extends ItemView {
 	updateNodeSelection(svgGroup: any, nodesData: any) {
 		return svgGroup.select('g.nodes').selectAll('circle')
 			.data(nodesData, (d: any) => d.id)
+			.style('cursor', 'pointer')
 			.join(
 				(enter: any) => this.enterNode(enter),
 				(update: any) => this.updateNode(update),
@@ -1245,25 +1407,27 @@ class ScGraphItemView extends ItemView {
 	}
 	
 	onDrag(event: any, d: any) {
+
+		// Ensure hovering date isnt active when dragging.
+		if(this.isHovering) this.isHovering = false;
+
 		d.fx = event.x;
 		d.fy = event.y;
 	
-		 // Update the position of the node's label immediately during dragging
-		 this.labelSelection
-		 .filter((node: any) => node.id === d.id)
-		 .attr('x', d.x)
-		 .attr('y', () => {
-			 if (d.highlighted) {
-				 return d.y + 8; // Keep label 8px down if node is highlighted
-			 }
-			 return d.y;
-		 });
- 
-	 // Update the node position immediately during dragging
-	 this.nodeSelection
-		 .filter((node: any) => node.id === d.id)
-		 .attr('cx', d.x)
-		 .attr('cy', d.y);
+		// if (d.id === this.centralNode.id) {
+		//  // Update the position of the node's label immediately during dragging
+		//  this.labelSelection
+		//  .filter((node: any) => node.id === d.id)
+		//  .attr('x', d.x)
+		//  .attr('y', () => {
+		// 	 if (d.highlighted) {
+		// 		 return d.y + 8; // Keep label 8px down if node is highlighted
+		// 	 }
+		// 	 return d.y;
+		//  });
+
+		// }
+
 	}
 	
 	
@@ -1273,26 +1437,46 @@ class ScGraphItemView extends ItemView {
 		d.fx = null;
 		d.fy = null;
 		this.dragging = false
+
+
 	}
 	
 	onNodeClick(event: any, d: any) {
-		event.stopPropagation();
-		if (!this.isAltPressed) this.clearSelections();
+
+		// Don't need to touch central since we're in it
+		if(d.id === this.centralNode.id) return;
+
+		this.env.plugin.open_note(d.id, event)
+
+		// event.stopPropagation();
 		// TODO:: Bring back when ready for selection
+
+		// if (!this.isAltPressed) this.clearSelections();
 		// d.selected = !d.selected;
 		// if (!d.selected) {
 		// 	d.highlighted = false;
 		// }
-		this.updateNodeAppearance();
+		// this.updateNodeAppearance();
 	}	
 
-	onNodeMouseOver(event: any, d: any) {		
+	onNodeMouseOver(event: any, d: any) {
+
+		// Dont trigger possible highlights if user dragging around nodes quickly for fun
+		if(this.dragging) return;
+					
+		// Don't apply hover affect to center node
+		if(d.id === this.centralNode.id) return;
+
+		// Hovering state active
 		this.isHovering = true;
-		if (!d.selected) this.highlightNode(d);
+
+		// Highlight node
+		this.highlightNode(d);
+
 		// Show link labels associated with the node
 		this.updateLinkLabelAppearance(d);
-	
-		// TODO:: Comment back when ready to implement Label MOvement animation on hover
+
+		// TODO:: Comment back when ready to implement Label Movement animation on hover
 		// console.log(`Hovering over node: ${d.id}, original y: ${d.y}`);
 		// this.svgGroup.select(`text[data-id='${d.id}']`).transition().duration(4000).attr('y', d.y + 8); // Animate label down 10 pixels
 	
@@ -1310,7 +1494,8 @@ class ScGraphItemView extends ItemView {
 
 		this.isHovering = false;
 		this.centerHighlighted = false;
-		if (!d.selected) this.unhighlightNode();
+		this.unhighlightNode(d);
+
 		// Hide link labels associated with the node
 		this.updateLinkLabelAppearance({ id: null });
 	
@@ -1322,6 +1507,7 @@ class ScGraphItemView extends ItemView {
 	updateLinkSelection(svgGroup: any) {
 		return svgGroup.select('g.links').selectAll('line')
 			.data(this.validatedLinks, (d: any) => `${d.source}-${d.target}`)
+			.style('cursor', 'pointer')
 			.join(
 				(enter: any) => this.enterLink(enter),
 				(update: any) => this.updateLink(update),
@@ -1374,17 +1560,6 @@ class ScGraphItemView extends ItemView {
 		return update.text((d: any) => (d.score * 100).toFixed(1));
 	}
 
-	updateLabelSelection(svgGroup: any, nodesData: any) {
-		return svgGroup.select('g.labels').selectAll('text')
-			.data(nodesData, (d: any) => d.id)
-			.join(
-				(enter: any) => this.enterLabel(enter),
-				(update: any) => this.updateLabel(update),
-				(exit: { remove: () => any; }) => exit.remove()
-			)
-			.attr('x', (d: any) => d.x)
-			.attr('y', (d: any) => d.y);
-	}
 	enterLabel(enter: any) {
 		return enter.append('text')
 			.attr('class', 'label')
@@ -1405,15 +1580,15 @@ class ScGraphItemView extends ItemView {
 		return update.attr('dx', 0)
 			.attr('data-id', (d: any) => d.id)
 			.attr('text-anchor', 'middle')
-			.text((d: any) => this.formatLabel(d.name))
+			.text((d: any) => d.id === this.highlightedNodeId ? this.formatLabel(d.name, false) : this.formatLabel(d.name, true))
 			.attr('fill', '#bbb')
 			.attr('font-size', this.nodeLabelSize)
 			.attr('x', (d: any) => d.x) // Update x position
-			.attr('y', (d: any) => d.highlighted ? d.y + 8 : d.y) // Update y position with offset for highlight
+			.attr('y', (d: any) => d.y) // Update y position with offset for highlight
 			.attr('opacity', 1);
 	}
 	
-
+  
 	updateSimulation(nodesData: any) {
 		if (!nodesData || !this.validatedLinks) {
 			console.error('Nodes data or validated links are undefined');
@@ -1424,7 +1599,7 @@ class ScGraphItemView extends ItemView {
 			.force('link', d3.forceLink(this.validatedLinks)
 				.id((d: any) => d.id)
 				.distance((d: any) => this.linkDistanceScale(d.score))
-				.strength(this.linkForce))			// .force('center', d3.forceCenter(this.contentEl.clientWidth / 2, this.contentEl.clientHeight / 2).strength(0.1)) // Adjust the strength as needed
+				.strength(this.linkForce))			
 			.force('charge', d3.forceManyBody().strength(-this.repelForce))
 			.force('collide', d3.forceCollide().radius(this.nodeSize + 3).strength(0.7))
 			.on('tick', this.simulationTickHandler.bind(this));
@@ -1457,9 +1632,9 @@ class ScGraphItemView extends ItemView {
 				.id((d: any) => d.id)
 				.distance((d: any) => this.linkDistanceScale(d.score))
 				.strength(this.linkForce))		
-			.force('collide', d3.forceCollide().radius(this.nodeSize + 3).strength(0.7));
+			// .force('collide', d3.forceCollide().radius(this.nodeSize + 3).strength(0.7));
 
-    		this.simulation.alpha(1).restart();
+    		this.simulation.alphaTarget(0.3).restart();
 	}
 
 	normalizeScore(score: number) : number{
@@ -1577,19 +1752,22 @@ class ScGraphItemView extends ItemView {
 		this.selectionBox.remove();
 	}
 
-	showTooltip(event: any, d: any) {
-		const tooltip = d3.select('.tooltip');
-		tooltip.text(d.name)
-			.style('visibility', 'visible');
-		const [x, y] = d3.pointer(event);
-		tooltip.style('top', `${y + 10}px`)
-			.style('left', `${x + 10}px`);
-	}
+	
 
-	hideTooltip() {
-		const tooltip = d3.select('.tooltip');
-		tooltip.style('visibility', 'hidden');
-	}
+	// TODO:: Add back in when ready for toolti
+	// showTooltip(event: any, d: any) {
+	// 	const tooltip = d3.select('.tooltip');
+	// 	tooltip.text(d.name)
+	// 		.style('visibility', 'visible');
+	// 	const [x, y] = d3.pointer(event);
+	// 	tooltip.style('top', `${y + 10}px`)
+	// 		.style('left', `${x + 10}px`);
+	// }
+
+	// hideTooltip() {
+	// 	const tooltip = d3.select('.tooltip');
+	// 	tooltip.style('visibility', 'hidden');
+	// }
 
 }
 

@@ -24,11 +24,20 @@ If your plugin does not need CSS, delete this file.
 
 .node:hover {
     stroke: #fff;
+    cursor: pointer;
     stroke-width: 0.4px;
 }
 
+svg {
+    pointer-events: all;
+}
+
+svg .nodes circle {
+    cursor: pointer;
+}
+
 .node {
-    z-index: 10; /* Ensure nodes are above other elements */
+    cursor: pointer;
 }
 
 .settings-icon {
@@ -98,7 +107,35 @@ If your plugin does not need CSS, delete this file.
 
 #refresh-icon {
     font-size: 28px;
-    margin-top: -11px;
+    margin-top: -9px;
+}
+
+.lucide-x {
+    height: 24px !important;
+    width: 24px !important;
+}
+
+.workspace-leaf-content {
+    background-color: #2d3039 !important;
+}
+
+.settings-icon {
+    -webkit-app-region: no-drag;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 1px;
+    color: #7c849c;
+    /* opacity: var(--icon-opacity); */
+    transition: opacity 0.15s ease-in-out;
+    height: auto;
+    border: 1px solid #434851;
+    position: absolute;
+    padding: 8px;
+    top: 14px;
+    right: 14px;
 }
 
 .accordion-header {
