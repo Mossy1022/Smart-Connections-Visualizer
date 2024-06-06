@@ -1,14 +1,5 @@
-import { Plugin, ItemView, WorkspaceLeaf } from 'obsidian';
+import { Plugin, ItemView, WorkspaceLeaf, debounce } from 'obsidian';
 import * as d3 from "d3";
-
-interface ScGraphViewSettings {
-    mySetting: string;
-}
-
-const DEFAULT_SETTINGS: ScGraphViewSettings = {
-    mySetting: 'default'
-}
-
 
 const DEFAULT_NETWORK_SETTINGS : any = {
 	scoreThreshold: 0.5,
@@ -88,11 +79,11 @@ class ScGraphItemView extends ItemView {
     }
 
     getViewType(): string {
-        return "Smart Connections Visualizer";
+        return "smart-connections-visualizer";
     }
 
     getDisplayText(): string {
-        return "Smart Connections Visualizer";
+        return "Smart connections visualizer";
     }
 
     getIcon(): string {
@@ -266,6 +257,8 @@ class ScGraphItemView extends ItemView {
 	async onOpen() {
 		this.contentEl.createEl('h2', { text: 'Smart Visualizer' });
 		this.contentEl.createEl('p', { text: 'Waiting for Smart Connections to load...' });
+		console.log(this.app);
+
 		this.render();
 	}
 
@@ -556,7 +549,7 @@ class ScGraphItemView extends ItemView {
 	getFiltersContent(parent: HTMLElement) {
 		const sliderContainer1 = parent.createEl('div', { cls: 'slider-container' });
 		sliderContainer1.createEl('label', { 
-			text: `Min Relevance: ${(this.relevanceScoreThreshold * 100).toFixed(0)}%`, 
+			text: `Min relevance: ${(this.relevanceScoreThreshold * 100).toFixed(0)}%`, 
 			attr: { id: 'scoreThresholdLabel', for: 'scoreThreshold' } 
 		});
 
@@ -575,7 +568,7 @@ class ScGraphItemView extends ItemView {
 		// Ensure the slider's value is set after it is appended to the DOM
 		relevanceSlider.value = this.relevanceScoreThreshold.toString();
 	
-		parent.createEl('label', { text: 'Connection Type:', cls: 'settings-item-content-label' });
+		parent.createEl('label', { text: 'Connection type:', cls: 'settings-item-content-label' });
 	
 		const radioContainer = parent.createEl('div', { cls: 'radio-container' });
 
@@ -605,13 +598,13 @@ class ScGraphItemView extends ItemView {
 
 	getDisplayContent(parent: HTMLElement) {
 		const displaySettings = [
-			{ id: 'nodeSize', label: 'Node Size', value: this.nodeSize, min: 1, max: 15, step: 0.01 },
-			{ id: 'maxLabelCharacters', label: 'Max Label Characters', value: this.maxLabelCharacters, min: 1, max: 50, step: 1 },
-			{ id: 'linkLabelSize', label: 'Link Label Size', value: this.linkLabelSize, min: 1, max: 15, step: 0.01 },
-			{ id: 'nodeLabelSize', label: 'Node Label Size', value: this.nodeLabelSize, min: 1, max: 26, step: 1 },
-			{ id: 'minLinkThickness', label: 'Min Link Thickness', value: this.minLinkThickness, min: 0.1, max: 10, step: 0.01 },
-			{ id: 'maxLinkThickness', label: 'Max Link Thickness', value: this.maxLinkThickness, min: 0.1, max: 10, step: 0.01 },
-			{ id: 'fadeThreshold', label: 'Text Fade Threshold', value: this.textFadeThreshold, min: 0.1, max: 10, step: 0.01 }
+			{ id: 'nodeSize', label: 'Node size', value: this.nodeSize, min: 1, max: 15, step: 0.01 },
+			{ id: 'maxLabelCharacters', label: 'Max label characters', value: this.maxLabelCharacters, min: 1, max: 50, step: 1 },
+			{ id: 'linkLabelSize', label: 'Link label size', value: this.linkLabelSize, min: 1, max: 15, step: 0.01 },
+			{ id: 'nodeLabelSize', label: 'Node label size', value: this.nodeLabelSize, min: 1, max: 26, step: 1 },
+			{ id: 'minLinkThickness', label: 'Min link thickness', value: this.minLinkThickness, min: 0.1, max: 10, step: 0.01 },
+			{ id: 'maxLinkThickness', label: 'Max link thickness', value: this.maxLinkThickness, min: 0.1, max: 10, step: 0.01 },
+			{ id: 'fadeThreshold', label: 'Text fade threshold', value: this.textFadeThreshold, min: 0.1, max: 10, step: 0.01 }
 		];
 	
 		displaySettings.forEach(setting => {
@@ -624,9 +617,9 @@ class ScGraphItemView extends ItemView {
 
 	getForcesContent(parent: HTMLElement) {
 		const forcesSettings = [
-			{ id: 'repelForce', label: 'Repel Force', value: this.repelForce, min: 0, max: 1500, step: 1 },
-			{ id: 'linkForce', label: 'Link Force', value: this.linkForce, min: 0, max: 1, step: 0.01 },
-			{ id: 'linkDistance', label: 'Link Distance', value: this.linkDistance, min: 10, max: 200, step: 1 }
+			{ id: 'repelForce', label: 'Repel force', value: this.repelForce, min: 0, max: 1500, step: 1 },
+			{ id: 'linkForce', label: 'Link force', value: this.linkForce, min: 0, max: 1, step: 0.01 },
+			{ id: 'linkDistance', label: 'Link distance', value: this.linkDistance, min: 10, max: 200, step: 1 }
 		];
 	
 		forcesSettings.forEach(setting => {
@@ -806,7 +799,9 @@ class ScGraphItemView extends ItemView {
 		const scoreThresholdSlider = document.getElementById('scoreThreshold') as HTMLInputElement;
 		if (scoreThresholdSlider) {
 			scoreThresholdSlider.addEventListener('input', (event) => this.updateScoreThreshold(event));
-			const debouncedUpdate = this.debounce((event: Event) => this.updateVisualization(parseFloat((event.target as HTMLInputElement).value)), 500);
+			const debouncedUpdate = debounce((event: Event) => {
+				this.updateVisualization(parseFloat((event.target as HTMLInputElement).value));
+			}, 500, true);			
 			scoreThresholdSlider.addEventListener('input', debouncedUpdate);
 		}
 	}
@@ -815,14 +810,6 @@ class ScGraphItemView extends ItemView {
 		const newScoreThreshold = parseFloat(event.target.value);
 		const label = document.getElementById('scoreThresholdLabel');
 		if (label) label.textContent = `Min Relevance: ${(newScoreThreshold * 100).toFixed(0)}%`;
-	}
-
-	debounce(func: Function, wait: number) {
-		let timeout: number | undefined;
-		return function (...args: any[]) {
-			clearTimeout(timeout);
-			timeout = window.setTimeout(() => func.apply(this, args), wait);
-		};
 	}
 
 	setupNodeSizeSlider() {
@@ -1782,129 +1769,40 @@ class ScGraphItemView extends ItemView {
 */
 	
 export default class ScGraphView extends Plugin {
-    settings: ScGraphViewSettings;
+    settings: any;
 
     async onload() {
         await this.loadSettings();
         // Register the new view
-        this.registerView("Smart Connections Visualizer", (leaf: WorkspaceLeaf) => new ScGraphItemView(leaf));
+        this.registerView("smart-connections-visualizer", (leaf: WorkspaceLeaf) => new ScGraphItemView(leaf));
 
 				// Register hover link source
-				this.registerHoverLinkSource('Smart Connections Visualizer', {
-					display: 'Smart Connections Visualizer Hover Link Source',
+				this.registerHoverLinkSource('smart-connections-visualizer', {
+					display: 'Smart connections visualizer hover link source',
 					defaultMod: true
 				});
 
         // This creates an icon in the left ribbon.
-        const ribbonIconEl = this.addRibbonIcon('git-fork', 'Smart Connections Visualizer', (evt: MouseEvent) => {
-            // Called when the user clicks the icon.
+        this.addRibbonIcon('git-fork', 'Open smart connections visualizer', (evt: MouseEvent) => {
             // Create a new leaf in the current workspace
             let leaf = this.app.workspace.getLeaf(true);
     
             // Set the new leaf's view to your custom view
             leaf.setViewState({
-                type: "Smart Connections Visualizer",
+                type: "smart-connections-visualizer",
                 active: true,
             });
         })
 
-        // This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-        const statusBarItemEl = this.addStatusBarItem();
-        statusBarItemEl.setText('Status Bar Text');
-
-        // This adds a simple command that can be triggered anywhere
-        this.addCommand({
-            id: 'open-sample-modal-simple',
-            name: 'Open sample modal (simple)',
-            callback: () => {
-                // Create a new leaf in the current workspace
-                let leaf = this.app.workspace.getLeaf(true);
-        
-                // Set the new leaf's view to your custom view
-                leaf.setViewState({
-                    type: "Smart Connections Visualizer",
-                    active: true,
-                });
-            }
-        });
-        // // This adds an editor command that can perform some operation on the current editor instance
-        // this.addCommand({
-        //     id: 'sample-editor-command',
-        //     name: 'Sample editor command',
-        //     callback: () => {
-        //         // Create a new leaf in the current workspace
-        //         let leaf = this.app.workspace.getLeaf(true);
-        
-        //         // Set the new leaf's view to your custom view
-        //         leaf.setViewState({
-        //             type: "Smart Graph View",
-        //             active: true,
-        //         });
-        //     }
-        // });
-
-        // This adds a complex command that can check whether the current state of the app allows execution of the command
-        this.addCommand({
-            id: 'open-sample-modal-complex',
-            name: 'Open sample modal (complex)',
-            callback: () => {
-                // Create a new leaf in the current workspace
-                let leaf = this.app.workspace.getLeaf(true);
-        
-                // Set the new leaf's view to your custom view
-                leaf.setViewState({
-                    type: "Smart Connections Visualizer",
-                    active: true,
-                });
-            }
-        });
-
-        // // This adds a settings tab so the user can configure various aspects of the plugin
-        // this.addSettingTab(new SampleSettingTab(this.app, this));
-
-				// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-        // Using this function will automatically remove the event listener when this plugin is disabled.
-        this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-					// console.log('click', evt);
-				});
-
-        // // When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-        // this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
     }
 
     onunload() {}
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+        this.settings = Object.assign({},  { mySetting: 'default'}, await this.loadData());
     }
 
     async saveSettings() {
         await this.saveData(this.settings);
     }
 }
-
-// class SampleSettingTab extends PluginSettingTab {
-//     plugin: ScGraphView;
-
-//     constructor(app: App, plugin: ScGraphView) {
-//         super(app, plugin);
-//         this.plugin = plugin;
-//     }
-
-//     display(): void {
-//         const {containerEl} = this;
-
-//         containerEl.empty();
-
-//         new Setting(containerEl)
-//             .setName('Setting #1')
-//             .setDesc('It\'s a secret')
-//             .addText(text => text
-//                 .setPlaceholder('Enter your secret... This will change everything')
-//                 .setValue(this.plugin.settings.mySetting)
-//                 .onChange(async (value) => {
-//                     this.plugin.settings.mySetting = value;
-//                     await this.plugin.saveSettings();
-//                 }));
-//     }
-// }
