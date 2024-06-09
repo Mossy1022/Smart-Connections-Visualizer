@@ -183,8 +183,9 @@ class ScGraphItemView extends ItemView {
 	
 	updateLinkLabelAppearance(node: any) {
 		this.linkLabelSelection.transition().duration(500)
-			.attr('opacity', (d: any) => (d.source.id === node.id || d.target.id === node.id) ? 1 : 0)
-			.text((d: any) => d.id === this.highlightedNodeId ? this.formatLabel(d.name, false) : this.formatLabel(d.name, true));
+		.attr('opacity', (d: any) => {
+			return (d.source.id === node.id || d.target.id === node.id) ? 1 : 0;
+		})
 	}
 	
 
@@ -1169,11 +1170,15 @@ class ScGraphItemView extends ItemView {
 	}
 
 	simulationTickHandler() {
+		console.log("Checking node positions during tick:");
+		this.linkLabelSelection.each((d: any) => {
+			console.log(`Source: (${d.source.x}, ${d.source.y}), Target: (${d.target.x}, ${d.target.y} ${d.source})`);
+		});
 		this.nodeSelection.attr('cx', (d: any) => d.x).attr('cy', (d: any) => d.y).style('cursor', 'pointer');
 		this.linkSelection.attr('x1', (d: any) => d.source.x || 0).attr('y1', (d: any) => d.source.y || 0).style('cursor', 'pointer')
 			.attr('x2', (d: any) => d.target.x || 0).attr('y2', (d: any) => d.target.y || 0);
-		this.linkLabelSelection.attr('x', (d: any) => ((d.source.x + d.target.x) / 2) || 0)
-			.attr('y', (d: any) => ((d.source.y + d.target.y) / 2) || 0);
+		this.linkLabelSelection.attr('x', (d: any) => ((d.source.x + d.target.x) / 2))
+			.attr('y', (d: any) => ((d.source.y + d.target.y) / 2));
 		this.labelSelection
 			.attr('x', (d: any) => d.x)
 			.attr('y', (d: any) => d.y);
@@ -1321,13 +1326,14 @@ class ScGraphItemView extends ItemView {
 			 exit => exit.remove()
 		 );
  
+		
 		 this.linkLabelSelection = svgGroup.select('g.link-labels').selectAll('text')
-			.data(this.validatedLinks, (d: any) => `${d.source.id}-${d.target.id}`)
-			.join(
-				enter => this.enterLinkLabel(enter),
-				update => this.updateLinkLabel(update),
-				exit => exit.remove()
-			);
+        .data(this.validatedLinks, (d: any) => `${d.source.id}-${d.target.id}`)
+        .join(
+            enter => this.enterLinkLabel(enter),
+            update => this.updateLinkLabel(update),
+            exit => exit.remove()
+        );
 	
 		this.labelSelection = svgGroup.select('g.node-labels').selectAll('text')
 			.data(nodesData, (d: any) => d.id)
@@ -1490,7 +1496,12 @@ class ScGraphItemView extends ItemView {
 		// console.log(`Mouse out from node: ${d.id}, returning label to y: ${d.y}`);
 		// this.svgGroup.select(`text[data-id='${d.id}']`).transition().duration(400).attr('y', d.y); // Animate label back to original position
 	}
-
+	
+	updateLinkLabelPositions() {
+		this.linkLabelSelection
+			.attr('x', (d: any) => (d.source.x + d.target.x) / 2)
+			.attr('y', (d: any) => (d.source.y + d.target.y) / 2);
+	}
 	updateLinkSelection(svgGroup: any) {
 		return svgGroup.select('g.links').selectAll('line')
 			.data(this.validatedLinks, (d: any) => `${d.source}-${d.target}`)
@@ -1540,11 +1551,18 @@ class ScGraphItemView extends ItemView {
 			.attr('font-size', this.linkLabelSize)
 			.attr('fill', '#bbb')
 			.attr('opacity', 0)
+			.attr('x', (d: any) => d.x) // Initialize x position
+			.attr('y', (d: any) => d.y) // Initialize y position
+
 			.text((d: any) => (d.score * 100).toFixed(1) + '%');
 	}
 
 	updateLinkLabel(update: any) {
-		return update.text((d: any) => (d.score * 100).toFixed(1));
+		
+		return update.text((d: any) => (d.score * 100).toFixed(1))
+		.attr('x', (d: any) => d.x) // Initialize x position
+		.attr('y', (d: any) => d.y) // Initialize y position
+
 	}
 
 	enterLabel(enter: any) {
