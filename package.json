@@ -1,6 +1,6 @@
 {
 	"name": "smart-connections-visualizer",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "A plugin that allows you to view your Smart Connections in a visualized format.",
 	"main": "main.js",
 	"scripts": {

@@ -286,6 +286,7 @@ class ScGraphItemView extends ItemView {
 		const delay = 2000; // Delay in milliseconds between retries
 	
 		for (let attempt = 0; attempt < maxRetries; attempt++) {
+			console.log(this.env);
 			if (this.env?.entities_loaded) {
 				return;
 			}
@@ -1790,8 +1791,8 @@ export default class ScGraphView extends Plugin {
     settings: any;
 
     async onload() {
-        await this.loadSettings();
-        // Register the new view
+
+		// Register the new view
         this.registerView("smart-connections-visualizer", (leaf: WorkspaceLeaf) => new ScGraphItemView(leaf));
 
 				// Register hover link source
@@ -1816,11 +1817,4 @@ export default class ScGraphView extends Plugin {
 
     onunload() {}
 
-    async loadSettings() {
-        this.settings = Object.assign({},  { mySetting: 'default'}, await this.loadData());
-    }
-
-    async saveSettings() {
-        await this.saveData(this.settings);
-    }
 }
