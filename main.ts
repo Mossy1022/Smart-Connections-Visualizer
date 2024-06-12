@@ -1788,7 +1788,6 @@ class ScGraphItemView extends ItemView {
 */
 	
 export default class ScGraphView extends Plugin {
-    settings: any;
 
     async onload() {
 
