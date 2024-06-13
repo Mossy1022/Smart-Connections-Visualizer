@@ -1171,9 +1171,9 @@ class ScGraphItemView extends ItemView {
 	}
 
 	simulationTickHandler() {
-		console.log("Checking node positions during tick:");
+		// console.log("Checking node positions during tick:");
 		this.linkLabelSelection.each((d: any) => {
-			console.log(`Source: (${d.source.x}, ${d.source.y}), Target: (${d.target.x}, ${d.target.y} ${d.source})`);
+			// console.log(`Source: (${d.source.x}, ${d.source.y}), Target: (${d.target.x}, ${d.target.y} ${d.source})`);
 		});
 		this.nodeSelection.attr('cx', (d: any) => d.x).attr('cy', (d: any) => d.y).style('cursor', 'pointer');
 		this.linkSelection.attr('x1', (d: any) => d.source.x || 0).attr('y1', (d: any) => d.source.y || 0).style('cursor', 'pointer')
