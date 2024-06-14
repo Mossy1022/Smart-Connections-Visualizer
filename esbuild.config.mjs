@@ -20,7 +20,7 @@ const copy_to_plugins = {
 	name: 'copy_to_plugins',
 	setup(build) {
 		build.onEnd(() => {
-			const plugin_path = path.join(process.env.OBSIDIAN_PLUGINS_PATH, "smart-connections-graph-view");
+			const plugin_path = path.join(process.env.OBSIDIAN_PLUGINS_PATH, "smart-connections-visualizer");
 			
 			if (!fs.existsSync(plugin_path)) {
 				fs.mkdirSync(plugin_path);
@@ -61,7 +61,7 @@ const context = await esbuild.context({
 	format: "cjs",
 	target: "es2018",
 	logLevel: "info",
-	sourcemap: prod ? false : "inline",
+	sourcemap: "inline",
 	treeShaking: true,
 	outfile: "main.js",
 	plugins: [
