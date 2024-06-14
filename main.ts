@@ -1199,9 +1199,7 @@ class ScGraphItemView extends ItemView {
 	}
 
 	simulationTickHandler() {
-		this.nodeSelection.attr('cx', (d: any) => {
-			return d.x;
-		}).attr('cy', (d: any) => d.y).style('cursor', 'pointer');
+		this.nodeSelection.attr('cx', (d: any) => d.x).attr('cy', (d: any) => d.y).style('cursor', 'pointer');
 		this.linkSelection.attr('x1', (d: any) => d.source.x || 0).attr('y1', (d: any) => d.source.y || 0).style('cursor', 'pointer')
 			.attr('x2', (d: any) => d.target.x || 0).attr('y2', (d: any) => d.target.y || 0);
 		this.linkLabelSelection.attr('x', (d: any) => ((d.source.x + d.target.x) / 2))
