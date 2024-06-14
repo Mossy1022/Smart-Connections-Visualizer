@@ -382,11 +382,6 @@ class ScGraphItemView extends ItemView {
 
 	}
 
-	setupNodesAndLinks(svgGroup: any) {
-		this.nodeSelection = this.createNodes(svgGroup);
-		this.linkSelection = this.createLinks(svgGroup);
-	}
-
 	// Ensure node labels dont collide with any elements
 	avoidLabelCollisions() {
 		const padding = 5; // Adjust padding as needed
@@ -959,6 +954,7 @@ class ScGraphItemView extends ItemView {
 	updateConnectionType(event: any) {
 		this.connectionType = event.target.value;
 		this.isChangingConnectionType = true;
+		console.log('Toggled connection type:', this.connectionType);
 		this.updateVisualization();
 	}
 
@@ -1109,6 +1105,7 @@ class ScGraphItemView extends ItemView {
 	}
 
 	updateVisualization(newScoreThreshold?: number) {
+		console.log('updating vix');
 		if (this.updatingVisualization && !this.isChangingConnectionType) {
 			this.updatingVisualization = false;
 			this.currentNoteChanging = false;
@@ -1127,10 +1124,33 @@ class ScGraphItemView extends ItemView {
 			visibleNodes.add(connection.source);
 			visibleNodes.add(connection.target);
 		});
+		// Always include the central node
+		visibleNodes.add(this.centralNote.key);
 		const nodesData = Array.from(visibleNodes).map((id: any) => {
 			const node = this.nodes.find((node: any) => node.id === id);
 			return node ? node : null;
 		}).filter(Boolean);
+
+		 // Ensure the central node is included in nodesData
+		 if (!nodesData.some((node: any) => node.id === this.centralNote.key)) {
+			const centralNode = this.nodes.find((node: any) => node.id === this.centralNote.key);
+			if (centralNode) {
+				nodesData.push(centralNode);
+			}
+		}
+
+		 // Check and initialize node positions
+		 nodesData.forEach((node: any) => {
+
+			if (!node.x || !node.y) {
+				console.log('hello');
+				console.warn(`Node with invalid position: ${node.id}`);
+				node.x = Math.random() * 1000; // or some default value
+				node.y = Math.random() * 1000; // or some default value
+			}
+		});
+
+
 	
 		this.validatedLinks = filteredConnections.filter((link: any) => {
 			const sourceNode = nodesData.find((node: any) => node.id === link.source);
@@ -1153,29 +1173,48 @@ class ScGraphItemView extends ItemView {
 		}
 	
 		this.updateNodeAndLinkSelection(nodesData);
+
+		// Final check before starting the simulation
+		nodesData.forEach((node: any) => {
+
+			if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) {
+				console.error(`Node with invalid position before starting simulation: ${node.id}`);
+				node.x = Math.random() * 1000; // or some default value
+				node.y = Math.random() * 1000; // or some default value
+			}
+		});
 		
 		if (!this.simulation || this.currentNoteChanging || this.isFiltering) {
+			console.log('intializing');
 			const { width, height } = this.getSVGDimensions();
 			this.initializeSimulation(width, height);
 			this.currentNoteChanging = false;
 			this.isFiltering = false;
 		}
+
+		console.log('updating nodes data1.5: ', JSON.parse(JSON.stringify(nodesData)));
+
 	
 		this.simulation.nodes(nodesData).on('tick', this.simulationTickHandler.bind(this));
+
+		console.log('validatedLinks: ',  JSON.parse(JSON.stringify(this.validatedLinks)))
 		this.simulation.force('link').links(this.validatedLinks)
 		.distance((d: any) => this.linkDistanceScale(d.score)); // Ensure the link distance is applied
 
+		console.log('updating nodes data3: ', nodesData[0].x);
+		console.log('updating nodes data2.5: ', JSON.parse(JSON.stringify(nodesData)));
+
 		this.simulation.alpha(1).restart();
 	
+		console.log('updating nodes data4: ', nodesData[0].x);
+
 		this.updatingVisualization = false;
 	}
 
 	simulationTickHandler() {
-		console.log("Checking node positions during tick:");
-		this.linkLabelSelection.each((d: any) => {
-			console.log(`Source: (${d.source.x}, ${d.source.y}), Target: (${d.target.x}, ${d.target.y} ${d.source})`);
-		});
-		this.nodeSelection.attr('cx', (d: any) => d.x).attr('cy', (d: any) => d.y).style('cursor', 'pointer');
+		this.nodeSelection.attr('cx', (d: any) => {
+			return d.x;
+		}).attr('cy', (d: any) => d.y).style('cursor', 'pointer');
 		this.linkSelection.attr('x1', (d: any) => d.source.x || 0).attr('y1', (d: any) => d.source.y || 0).style('cursor', 'pointer')
 			.attr('x2', (d: any) => d.target.x || 0).attr('y2', (d: any) => d.target.y || 0);
 		this.linkLabelSelection.attr('x', (d: any) => ((d.source.x + d.target.x) / 2))
@@ -1198,10 +1237,13 @@ class ScGraphItemView extends ItemView {
 		this.centralNote = this.smartNotes[this.currentNoteKey];
 		const noteConnections = this.centralNote.find_connections().filter(
 			(connection: any) => connection.score >= this.relevanceScoreThreshold);
+		console.log('Note connections:', noteConnections);
 		this.addCentralNode();
 		this.addFilteredConnections(noteConnections);
 		const isValid = this.validateGraphData(this.nodes, this.links);
 		if (!isValid) console.error('Graph data validation failed.');
+		console.log('Nodes after updateConnections:', this.nodes);
+		console.log('Links after updateConnections:', this.links);
 	}
 	
 	
@@ -1230,17 +1272,39 @@ class ScGraphItemView extends ItemView {
 	}
 	
 	
+	
+	// addFilteredConnections(noteConnections: any) {
+	// 	const filteredConnections = noteConnections.filter((connection: any) => connection.__proto__.constructor.name === (this.connectionType === 'block' ? 'SmartBlock' : 'SmartNote'));
+	// 	filteredConnections.forEach((connection: any, index: any) => {
+	// 		if (connection && connection.data && connection.data.key && connection.data.key.trim() !== '') {
+	// 			const connectionId = connection.data.key;
+	// 			this.addConnectionNode(connectionId);
+	// 			this.addConnectionLink(connectionId, connection);
+	// 		} else {
+	// 			console.warn(`Skipping invalid connection at index ${index}:`, connection);
+	// 		}
+	// 	});
+	// }
+
 	addFilteredConnections(noteConnections: any) {
 		const filteredConnections = noteConnections.filter((connection: any) => connection.__proto__.constructor.name === (this.connectionType === 'block' ? 'SmartBlock' : 'SmartNote'));
+		console.log('Filtered connections:', filteredConnections);
 		filteredConnections.forEach((connection: any, index: any) => {
-			if (connection && connection.data && connection.data.key && connection.data.key.trim() !== '') {
+			console.log('Filtered connection:', connection, 'Index:', index);
+			if (connection && connection.data && connection.data.key) {
 				const connectionId = connection.data.key;
+				console.log('Adding connection node for ID:', connectionId);
+
 				this.addConnectionNode(connectionId);
+				console.log('Adding connection link for ID:', connectionId);
+
 				this.addConnectionLink(connectionId, connection);
 			} else {
 				console.warn(`Skipping invalid connection at index ${index}:`, connection);
 			}
 		});
+		console.log('Nodes after addFilteredConnections:', this.nodes);
+		console.log('Links after addFilteredConnections:', this.links);	
 	}
 
 	addConnectionNode(connectionId: string) {
@@ -1248,7 +1312,7 @@ class ScGraphItemView extends ItemView {
 			this.nodes.push({
 				id: connectionId,
 				name: connectionId,
-				group: 'block',
+				group: this.connectionType,
 				x: Math.random() * 1000,
 				y: Math.random() * 1000,
 				fx: null,
@@ -1256,6 +1320,8 @@ class ScGraphItemView extends ItemView {
 				selected: false,
 				highlighted: false
 			});
+		} else {
+			console.log('Node already exists for connection ID:', connectionId);
 		}
 	}
 	
@@ -1273,6 +1339,8 @@ class ScGraphItemView extends ItemView {
 			return;
 		}
 	
+		console.log('Creating link from source to target:', this.centralNote.key, '->', connectionId);
+
 		this.links.push({
 			source: this.centralNote.key,
 			target: connectionId,
@@ -1348,7 +1416,9 @@ class ScGraphItemView extends ItemView {
 
 		// Update nodes after links
 		this.nodeSelection = svgGroup.select('g.nodes').selectAll('circle')
-			.data(nodesData, (d: any) => d.id)
+			.data(nodesData, (d: any) => { 
+				 return d.id;
+				})
 			.join(
 				enter => this.enterNode(enter),
 				update => this.updateNode(update),
@@ -1357,17 +1427,6 @@ class ScGraphItemView extends ItemView {
 	
 	}
 	
-
-	updateNodeSelection(svgGroup: any, nodesData: any) {
-		return svgGroup.select('g.nodes').selectAll('circle')
-			.data(nodesData, (d: any) => d.id)
-			.style('cursor', 'pointer')
-			.join(
-				(enter: any) => this.enterNode(enter),
-				(update: any) => this.updateNode(update),
-				(exit: { remove: () => any; }) => exit.remove()
-			);
-	}
 
 	enterNode(enter: any) {
 		const that = this;  // Reference to 'this' context for inner functions
@@ -1437,6 +1496,7 @@ class ScGraphItemView extends ItemView {
 	
 	onNodeClick(event: any, d: any) {
 
+		console.log('d: ', d);
 		// Don't need to touch central since we're in it
 		if(d.id === this.centralNode.id) return;
 
