@@ -1,8 +1,8 @@
-import { Plugin, ItemView, WorkspaceLeaf, debounce } from 'obsidian';
+import { Plugin, ItemView, WorkspaceLeaf, debounce, Notice } from 'obsidian';
 import * as d3 from "d3";
 
 const DEFAULT_NETWORK_SETTINGS : any = {
-	scoreThreshold: 0.5,
+	relevanceScoreThreshold: 0.5,
 	nodeSize: 4,
 	linkThickness: 0.3,
 	repelForce: 400,
@@ -15,6 +15,24 @@ const DEFAULT_NETWORK_SETTINGS : any = {
 	maxLabelCharacters: 18,
 	linkLabelSize: 7,
 	nodeLabelSize: 6,
+	connectionType: 'block'
+}
+
+interface PluginSettings {
+    relevanceScoreThreshold: number;
+    nodeSize: number;
+    linkThickness: number;
+    repelForce: number;
+    linkForce: number;
+    linkDistance: number;
+    centerForce: number;
+    textFadeThreshold: number;
+    minLinkThickness: number;
+    maxLinkThickness: number;
+    maxLabelCharacters: number;
+    linkLabelSize: number;
+    nodeLabelSize: number;
+	connectionType: string;
 }
 
 declare global {
@@ -24,6 +42,9 @@ declare global {
 }
 
 class ScGraphItemView extends ItemView {
+
+	private plugin: ScGraphView;
+
 	currentNoteKey: string; 
 	centralNote: any;
 	centralNode: any;
@@ -72,10 +93,28 @@ class ScGraphItemView extends ItemView {
 	isFiltering = false;
 	
 
-    constructor(leaf: WorkspaceLeaf) {
+    constructor(leaf: WorkspaceLeaf, plugin: ScGraphView) {
         super(leaf);
 		this.currentNoteKey = '';
 		this.isHovering = false;
+		this.plugin = plugin;
+
+		// Set the initial values from the loaded settings
+        this.relevanceScoreThreshold = this.plugin.settings.relevanceScoreThreshold;
+        this.nodeSize = this.plugin.settings.nodeSize;
+        this.linkThickness = this.plugin.settings.linkThickness;
+        this.repelForce = this.plugin.settings.repelForce;
+        this.linkForce = this.plugin.settings.linkForce;
+        this.linkDistance = this.plugin.settings.linkDistance;
+        this.centerForce = this.plugin.settings.centerForce;
+        this.textFadeThreshold = this.plugin.settings.textFadeThreshold;
+        this.minLinkThickness = this.plugin.settings.minLinkThickness;
+        this.maxLinkThickness = this.plugin.settings.maxLinkThickness;
+        this.maxLabelCharacters = this.plugin.settings.maxLabelCharacters;
+        this.linkLabelSize = this.plugin.settings.linkLabelSize;
+        this.nodeLabelSize = this.plugin.settings.nodeLabelSize;
+        this.connectionType = this.plugin.settings.connectionType;
+
     }
 
     getViewType(): string {
@@ -229,19 +268,35 @@ class ScGraphItemView extends ItemView {
 
 		// Remove the anchor part if it exists
 		if (path && path.includes('#')) {
+
 			const parts = path.split('#');
-			label = parts[parts.length - 1]; // Take the last part after splitting by '#'
+
+			let lastPart = parts[parts.length - 1]; // Take the last part after splitting by '#'
+    
+			// Check if the last part is empty or matches the pattern {number}
+			if (lastPart === '' || /^\{\d+\}$/.test(lastPart)) {
+				// Concatenate the last two parts
+				lastPart = parts[parts.length - 2] + '#' + lastPart;
+			}	
+			
+			//  // Check if lastPart contains any '/' and if so, take the last part after splitting by '/'
+			 if (lastPart.includes('/')) {
+				lastPart = lastPart.split('/').pop() || lastPart;
+			}
+			
+			label = lastPart;
+
 		} else if (path) {
 			label = path.split('/').pop() || label; // Take the last part after splitting by '/'
 		} else {
 			return '';
 		}
 	
-		// Remove brackets if they exist
-		label = label.replace(/[\[\]]/g, '');
-	
-		// Remove file extension if it exists
-		label = label.replace(/\.[^/.]+$/, '');
+
+		label = label.replace(/[\[\]]/g, '') // Remove brackets if they exist
+             .replace(/\.[^/#]+#(?=\{\d+\}$)/, '') // Remove hashtag if it exists
+             .replace(/\.[^/.]+$/, ''); // Remove file extension if it exists
+
 	
 		return label;
 		
@@ -590,6 +645,17 @@ class ScGraphItemView extends ItemView {
 		});
 		noteRadio.checked = (this.connectionType === 'note'); // Set checked based on connectionType
 		radioNoteLabel.appendText(' Note');
+
+		const radioBothLabel = radioContainer.createEl('label');
+		const bothRadio = radioBothLabel.createEl('input', { 
+			attr: { 
+				type: 'radio', 
+				name: 'connectionType', 
+				value: 'both' 
+			} 
+		});
+		bothRadio.checked = (this.connectionType === 'both'); // Set checked based on connectionType
+		radioBothLabel.appendText(' Both');
 	}
 	
 
@@ -806,7 +872,9 @@ class ScGraphItemView extends ItemView {
 	updateScoreThreshold(event: any) {
 		const newScoreThreshold = parseFloat(event.target.value);
 		const label = document.getElementById('scoreThresholdLabel');
-		if (label) label.textContent = `Min Relevance: ${(newScoreThreshold * 100).toFixed(0)}%`;
+		this.plugin.settings.relevanceScoreThreshold = newScoreThreshold; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
+		if (label) label.textContent = `Min relevance: ${(newScoreThreshold * 100).toFixed(0)}%`;
 	}
 
 	setupNodeSizeSlider() {
@@ -819,7 +887,9 @@ class ScGraphItemView extends ItemView {
 	updateNodeSize(event: any) {
 		const newNodeSize = parseFloat(event.target.value);
 		const label = document.getElementById('nodeSizeLabel');
-		if (label) label.textContent = `Node Size: ${newNodeSize}`;
+		if (label) label.textContent = `Node size: ${newNodeSize}`;
+		this.plugin.settings.nodeSize = newNodeSize; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
 		this.nodeSize = newNodeSize;
 		this.updateNodeSizes();
 	}
@@ -834,7 +904,9 @@ class ScGraphItemView extends ItemView {
 	updateLineThickness(event: any) {
 		const newLineThickness = parseFloat(event.target.value);
 		const label = document.getElementById('lineThicknessLabel');
-		if (label) label.textContent = `Line Thickness: ${newLineThickness}`;
+		if (label) label.textContent = `Line thickness: ${newLineThickness}`;
+		this.plugin.settings.linkThickness = newLineThickness; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
 		this.linkThickness = newLineThickness;
 		this.updateLinkThickness();
 	}
@@ -849,7 +921,9 @@ class ScGraphItemView extends ItemView {
 	updateCenterForce(event: any) {
 		const newCenterForce = parseFloat(event.target.value);
 		const label = document.getElementById('centerForceLabel');
-		if (label) label.textContent = `Center Force: ${newCenterForce}`;
+		if (label) label.textContent = `Center force: ${newCenterForce}`;
+		this.plugin.settings.centerForce = newCenterForce; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
 		this.centerForce = newCenterForce;
 		this.updateSimulationForces();
 	}
@@ -864,8 +938,10 @@ class ScGraphItemView extends ItemView {
 	updateRepelForce(event: any) {
 		const newRepelForce = parseFloat(event.target.value);
 		const label = document.getElementById('repelForceLabel');
-		if (label) label.textContent = `Repel Force: ${newRepelForce}`;
+		if (label) label.textContent = `Repel force: ${newRepelForce}`;
 		this.repelForce = newRepelForce;
+		this.plugin.settings.repelForce = newRepelForce; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
 		this.updateSimulationForces();
 	}
 
@@ -879,8 +955,10 @@ class ScGraphItemView extends ItemView {
 	updateLinkForce(event: any) {
 		const newLinkForce = parseFloat(event.target.value);
 		const label = document.getElementById('linkForceLabel');
-		if (label) label.textContent = `Link Force: ${newLinkForce}`;
+		if (label) label.textContent = `Link force: ${newLinkForce}`;
 		this.linkForce = newLinkForce;
+		this.plugin.settings.linkForce = newLinkForce; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
 		this.updateSimulationForces();
 	}
 
@@ -894,8 +972,10 @@ class ScGraphItemView extends ItemView {
 	updateLinkDistance(event: any) {
 		const newLinkDistance = parseFloat(event.target.value);
 		const label = document.getElementById('linkDistanceLabel');
-		if (label) label.textContent = `Link Distance: ${newLinkDistance}`;
+		if (label) label.textContent = `Link distance: ${newLinkDistance}`;
 		this.linkDistance = newLinkDistance;
+		this.plugin.settings.linkDistance = newLinkDistance; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
 		this.updateSimulationForces();
 	}
 
@@ -912,8 +992,10 @@ class ScGraphItemView extends ItemView {
 	updateFadeThreshold(event: any) {
 		const newFadeThreshold = parseFloat(event.target.value);
 		const label = document.getElementById('fadeThresholdLabel');
-		if (label) label.textContent = `Text Fade Threshold: ${newFadeThreshold}`;
+		if (label) label.textContent = `Text fade threshold: ${newFadeThreshold}`;
 		this.textFadeThreshold = newFadeThreshold;
+		this.plugin.settings.textFadeThreshold = newFadeThreshold; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
 	}
 
 	setupMinLinkThicknessSlider() {
@@ -926,8 +1008,10 @@ class ScGraphItemView extends ItemView {
 	updateMinLinkThickness(event: any) {
 		const newMinLinkThickness = parseFloat(event.target.value);
 		const label = document.getElementById('minLinkThicknessLabel');
-		if (label) label.textContent = `Min Link Thickness: ${newMinLinkThickness}`;
+		if (label) label.textContent = `Min link thickness: ${newMinLinkThickness}`;
 		this.minLinkThickness = newMinLinkThickness;
+		this.plugin.settings.minLinkThickness = newMinLinkThickness; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
 		this.updateLinkThickness();
 	}
 
@@ -941,8 +1025,10 @@ class ScGraphItemView extends ItemView {
 	updateMaxLinkThickness(event: any) {
 		const newMaxLinkThickness = parseFloat(event.target.value);
 		const label = document.getElementById('maxLinkThicknessLabel');
-		if (label) label.textContent = `Max Link Thickness: ${newMaxLinkThickness}`;
+		if (label) label.textContent = `Max link thickness: ${newMaxLinkThickness}`;
 		this.maxLinkThickness = newMaxLinkThickness;
+        this.plugin.settings.maxLinkThickness = newMaxLinkThickness; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
 		this.updateLinkThickness();
 	}
 
@@ -954,6 +1040,8 @@ class ScGraphItemView extends ItemView {
 	updateConnectionType(event: any) {
 		this.connectionType = event.target.value;
 		this.isChangingConnectionType = true;
+		this.plugin.settings.connectionType = this.connectionType; // Update the settings
+        this.plugin.saveSettings(); // Save the settings
 		this.updateVisualization();
 	}
 
@@ -1162,6 +1250,8 @@ class ScGraphItemView extends ItemView {
 		if (nodesData.length === 0 || this.validatedLinks.length === 0) {
 			this.updatingVisualization = false;
 			console.warn('No nodes or links to display after filtering. Aborting update.');
+			new Notice('No nodes or links to display after filtering. Adjust filter settings');
+
 			 // Clear the existing nodes and links from the visualization
 			 this.nodeSelection = this.svgGroup.select('g.nodes').selectAll('circle').data([]).exit().remove();
 			 this.linkSelection = this.svgGroup.select('g.links').selectAll('line').data([]).exit().remove();
@@ -1254,15 +1344,21 @@ class ScGraphItemView extends ItemView {
 	}
 	
 	addFilteredConnections(noteConnections: any) {
-		const filteredConnections = noteConnections.filter((connection: any) => connection.__proto__.constructor.name === (this.connectionType === 'block' ? 'SmartBlock' : 'SmartNote'));
-		// console.log('Filtered connections:', filteredConnections);
+
+		const filteredConnections = noteConnections.filter((connection: any) => {
+			if (this.connectionType === 'both') {
+				return true; // return all connections
+			} else {
+				return connection.__proto__.constructor.name === (this.connectionType === 'block' ? 'SmartBlock' : 'SmartNote');
+			}
+		});		// console.log('Filtered connections:', filteredConnections);
 		filteredConnections.forEach((connection: any, index: any) => {
 			// console.log('Filtered connection:', connection, 'Index:', index);
 			if (connection && connection.data && connection.data.key) {
 				const connectionId = connection.data.key;
 				// console.log('Adding connection node for ID:', connectionId);
 
-				this.addConnectionNode(connectionId);
+				this.addConnectionNode(connection);
 				// console.log('Adding connection link for ID:', connectionId);
 
 				this.addConnectionLink(connectionId, connection);
@@ -1274,13 +1370,12 @@ class ScGraphItemView extends ItemView {
 		// console.log('Links after addFilteredConnections:', this.links);	
 	}
 
-	addConnectionNode(connectionId: string) {
-		if (!this.nodes.some((node: { id: string; }) => node.id === connectionId)) {
+	addConnectionNode(connection: any) {
+		if (!this.nodes.some((node: { id: string; }) => node.id === connection.data.key)) {
 			this.nodes.push({
-				id: connectionId,
-				name: connectionId,
-				group: this.connectionType,
-				x: Math.random() * 1000,
+				id: connection.data.key,
+				name: connection.data.key,
+group: connection.__proto__.constructor.name === 'SmartBlock' ? 'block' : 'note',				x: Math.random() * 1000,
 				y: Math.random() * 1000,
 				fx: null,
 				fy: null,
@@ -1288,7 +1383,7 @@ class ScGraphItemView extends ItemView {
 				highlighted: false
 			});
 		} else {
-			console.log('Node already exists for connection ID:', connectionId);
+			console.log('Node already exists for connection ID:',connection.data.key);
 		}
 	}
 	
@@ -1813,10 +1908,14 @@ class ScGraphItemView extends ItemView {
 	
 export default class ScGraphView extends Plugin {
 
+	settings: PluginSettings;
+
     async onload() {
 
+		await this.loadSettings();
+
 		// Register the new view
-        this.registerView("smart-connections-visualizer", (leaf: WorkspaceLeaf) => new ScGraphItemView(leaf));
+        this.registerView("smart-connections-visualizer", (leaf: WorkspaceLeaf) => new ScGraphItemView(leaf, this));
 
 				// Register hover link source
 				this.registerHoverLinkSource('smart-connections-visualizer', {
@@ -1835,7 +1934,16 @@ export default class ScGraphView extends Plugin {
                 active: true,
             });
         })
+		
 
+    }
+
+	async loadSettings() {
+        this.settings = Object.assign({}, DEFAULT_NETWORK_SETTINGS, await this.loadData());
+    }
+
+	async saveSettings() {
+        await this.saveData(this.settings);
     }
 
     onunload() {}
