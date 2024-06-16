@@ -315,7 +315,11 @@ class ScGraphItemView extends ItemView {
 		this.contentEl.createEl('p', { text: 'Waiting for Smart Connections to load...' });
 		console.log(this.app);
 
-		this.render();
+		 // Introduce a small delay before rendering to give view time to load
+		 setTimeout(() => {
+			this.render();
+		}, 500); // Adjust the delay as needed
+
 	}
 
 	async render() {
@@ -323,6 +327,7 @@ class ScGraphItemView extends ItemView {
 		while (!this.env?.entities_loaded) {
 			await new Promise(resolve => setTimeout(resolve, 2000));
 		}
+
 		this.contentEl.empty();
 		this.initializeVariables();
 		if (Object.keys(this.smartNotes).length === 0) {
@@ -332,6 +337,16 @@ class ScGraphItemView extends ItemView {
 		this.addEventListeners();
 		this.setupSettingsMenu();
 		this.watchForNoteChanges();
+
+		// Load latest active file if opening view for first time
+		const currentNodeChange = this.app.workspace.getActiveFile();
+		if (currentNodeChange && !this.currentNoteChanging) {
+			this.currentNoteKey = currentNodeChange.path;
+			this.currentNoteChanging = true;
+			this.render();
+			return
+		}
+				
 		
 		this.updateVisualization();
 	}
@@ -1228,12 +1243,11 @@ class ScGraphItemView extends ItemView {
 		 // Check and initialize node positions
 		 nodesData.forEach((node: any) => {
 
-			if (!node.x || !node.y) {
-				console.log('hello');
-				console.warn(`Node with invalid position: ${node.id}`);
-				node.x = Math.random() * 1000; // or some default value
-				node.y = Math.random() * 1000; // or some default value
-			}
+			// if (!node.x || !node.y) {
+			// 	console.warn(`Node with invalid position: ${node.id}`);
+			// 	node.x = Math.random() * 1000; // or some default value
+			// 	node.y = Math.random() * 1000; // or some default value
+			// }
 		});
 
 
