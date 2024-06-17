@@ -1122,7 +1122,7 @@ class ScGraphItemView extends ItemView {
 	}
 
 	resetToDefault() {
-		this.relevanceScoreThreshold = DEFAULT_NETWORK_SETTINGS.scoreThreshold;
+		this.relevanceScoreThreshold = DEFAULT_NETWORK_SETTINGS.relevanceScoreThreshold;
 		this.nodeSize = DEFAULT_NETWORK_SETTINGS.nodeSize;
 		this.linkThickness = DEFAULT_NETWORK_SETTINGS.lineThickness;
 		this.repelForce = DEFAULT_NETWORK_SETTINGS.repelForce;
@@ -1135,27 +1135,47 @@ class ScGraphItemView extends ItemView {
 		this.maxLabelCharacters = DEFAULT_NETWORK_SETTINGS.maxLabelCharacters;
 		this.linkLabelSize = DEFAULT_NETWORK_SETTINGS.linkLabelSize;
 		this.nodeLabelSize = DEFAULT_NETWORK_SETTINGS.nodeLabelSize;
+		this.connectionType = DEFAULT_NETWORK_SETTINGS.connectionType;
+
 		this.updateLabelsToDefaults();
 		this.updateSliders();
 		this.updateNodeSizes();
 		this.updateLinkThickness();
 		this.updateSimulationForces();
 		this.updateVisualization(this.relevanceScoreThreshold);
+
+		// Update plugin settings
+		this.plugin.settings.relevanceScoreThreshold = DEFAULT_NETWORK_SETTINGS.relevanceScoreThreshold;
+		this.plugin.settings.nodeSize = DEFAULT_NETWORK_SETTINGS.nodeSize;
+		this.plugin.settings.linkThickness = DEFAULT_NETWORK_SETTINGS.lineThickness;
+		this.plugin.settings.repelForce = DEFAULT_NETWORK_SETTINGS.repelForce;
+		this.plugin.settings.linkForce = DEFAULT_NETWORK_SETTINGS.linkForce;
+		this.plugin.settings.linkDistance = DEFAULT_NETWORK_SETTINGS.linkDistance;
+		this.plugin.settings.centerForce = DEFAULT_NETWORK_SETTINGS.centerForce;
+		this.plugin.settings.textFadeThreshold = DEFAULT_NETWORK_SETTINGS.textFadeThreshold;
+		this.plugin.settings.minLinkThickness = DEFAULT_NETWORK_SETTINGS.minLinkThickness;
+		this.plugin.settings.maxLinkThickness = DEFAULT_NETWORK_SETTINGS.maxLinkThickness;
+		this.plugin.settings.maxLabelCharacters = DEFAULT_NETWORK_SETTINGS.maxLabelCharacters;
+		this.plugin.settings.linkLabelSize = DEFAULT_NETWORK_SETTINGS.linkLabelSize;
+		this.plugin.settings.nodeLabelSize = DEFAULT_NETWORK_SETTINGS.nodeLabelSize;
+		this.plugin.settings.connectionType = DEFAULT_NETWORK_SETTINGS.connectionType;
+        this.plugin.saveSettings(); // Save the settings
+
 	}
 
 	updateLabelsToDefaults() {
 		const labels = {
-			'scoreThresholdLabel': `Min Relevance: ${(this.relevanceScoreThreshold * 100).toFixed(0)}%`,
-			'nodeSizeLabel': `Node Size: ${this.nodeSize}`,
-			'maxLabelCharactersLabel': `Max Label Characters: ${this.maxLabelCharacters}`,
-			'linkLabelSizeLabel': `Link Label Size: ${this.linkLabelSize}`,
-			'nodeLabelSizeLabel': `Node Label Size: ${this.nodeLabelSize}`,
-			'minLinkThicknessLabel': `Min Link Thickness: ${this.minLinkThickness}`,
-			'maxLinkThicknessLabel': `Max Link Thickness: ${this.maxLinkThickness}`,
-			'fadeThresholdLabel': `Text Fade Threshold: ${this.textFadeThreshold}`,
-			'repelForceLabel': `Repel Force: ${this.repelForce}`,
-			'linkForceLabel': `Link Force: ${this.linkForce}`,
-			'linkDistanceLabel': `Link Distance: ${this.linkDistance}`
+			'scoreThresholdLabel': `Min relevance: ${(this.relevanceScoreThreshold * 100).toFixed(0)}%`,
+			'nodeSizeLabel': `Node size: ${this.nodeSize}`,
+			'maxLabelCharactersLabel': `Max label characters: ${this.maxLabelCharacters}`,
+			'linkLabelSizeLabel': `Link label size: ${this.linkLabelSize}`,
+			'nodeLabelSizeLabel': `Node label size: ${this.nodeLabelSize}`,
+			'minLinkThicknessLabel': `Min link thickness: ${this.minLinkThickness}`,
+			'maxLinkThicknessLabel': `Max link thickness: ${this.maxLinkThickness}`,
+			'fadeThresholdLabel': `Text fade threshold: ${this.textFadeThreshold}`,
+			'repelForceLabel': `Repel force: ${this.repelForce}`,
+			'linkForceLabel': `Link force: ${this.linkForce}`,
+			'linkDistanceLabel': `Link distance: ${this.linkDistance}`
 		};
 	
 		for (const [id, text] of Object.entries(labels)) {
@@ -1207,11 +1227,14 @@ class ScGraphItemView extends ItemView {
 	}
 
 	updateVisualization(newScoreThreshold?: number) {
+
+		// Only update if we're not already updating
 		if (this.updatingVisualization && !this.isChangingConnectionType) {
 			this.updatingVisualization = false;
 			this.currentNoteChanging = false;
 			return;
 		}
+
 		this.isChangingConnectionType = false;
 	
 		if (newScoreThreshold !== undefined) {
@@ -1219,6 +1242,7 @@ class ScGraphItemView extends ItemView {
 		}
 	
 		this.updateConnections();
+
 		const filteredConnections = this.connections.filter((connection: any) => connection.score >= this.relevanceScoreThreshold);
 		const visibleNodes = new Set<string>();
 		filteredConnections.forEach((connection: any) => {
@@ -1243,11 +1267,11 @@ class ScGraphItemView extends ItemView {
 		 // Check and initialize node positions
 		 nodesData.forEach((node: any) => {
 
-			// if (!node.x || !node.y) {
-			// 	console.warn(`Node with invalid position: ${node.id}`);
-			// 	node.x = Math.random() * 1000; // or some default value
-			// 	node.y = Math.random() * 1000; // or some default value
-			// }
+			if (!node.x || !node.y) {
+				console.warn(`Node with invalid position: ${node.id}`);
+				node.x = Math.random() * 1000; // or some default value
+				node.y = Math.random() * 1000; // or some default value
+			}
 		});
 
 
@@ -1276,15 +1300,6 @@ class ScGraphItemView extends ItemView {
 	
 		this.updateNodeAndLinkSelection(nodesData);
 
-		// Final check before starting the simulation
-		nodesData.forEach((node: any) => {
-
-			if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) {
-				console.error(`Node with invalid position before starting simulation: ${node.id}`);
-				node.x = Math.random() * 1000; // or some default value
-				node.y = Math.random() * 1000; // or some default value
-			}
-		});
 		
 		if (!this.simulation || this.currentNoteChanging || this.isFiltering) {
 			const { width, height } = this.getSVGDimensions();
@@ -1389,7 +1404,8 @@ class ScGraphItemView extends ItemView {
 			this.nodes.push({
 				id: connection.data.key,
 				name: connection.data.key,
-group: connection.__proto__.constructor.name === 'SmartBlock' ? 'block' : 'note',				x: Math.random() * 1000,
+				group: connection.__proto__.constructor.name === 'SmartBlock' ? 'block' : 'note',				
+				x: Math.random() * 1000,
 				y: Math.random() * 1000,
 				fx: null,
 				fy: null,
@@ -1777,6 +1793,10 @@ group: connection.__proto__.constructor.name === 'SmartBlock' ? 'block' : 'note'
 	}
 
 	normalizeScore(score: number) : number{
+		// When only one link, can't retun 0
+		if (this.minScore === this.maxScore) {
+			return 0.5; // or any other value in the range [0, 1]
+		}
         return (score - this.minScore) / (this.maxScore - this.minScore);
     }
 
