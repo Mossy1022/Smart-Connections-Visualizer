@@ -40,7 +40,7 @@ svg .nodes circle {
     cursor: pointer;
 }
 
-.settings-icon {
+.smart-connections-visualizer-settings-icon {
     position: absolute;
     top: 14px;
     right: 14px;
@@ -115,11 +115,7 @@ svg .nodes circle {
     width: 24px !important;
 }
 
-.workspace-leaf-content {
-    background-color: #2d3039 !important;
-}
-
-.settings-icon {
+.smart-connections-visualizer-settings-icon {
     -webkit-app-region: no-drag;
     background-color: transparent;
     display: flex;
@@ -183,4 +179,71 @@ svg .nodes circle {
     stroke: #00f;
     stroke-width: 1;
     fill: rgba(0, 0, 255, 0.3);
+}
+
+/* Styles for the legend container */
+.legend-container {
+    width: 295px;
+    border-collapse: collapse;
+    background-color: #2d3039; /* Dark background color similar to settings menu */
+    color: #a3aecb; /* Light text color similar to settings menu */
+    position: absolute;
+    top: 14;
+    left: 10;
+}
+
+/* Styles for the legend header */
+.legend-header {
+    display: flex;
+    background-color: #303030; /* Darker background color for header */
+    text-align: left;
+    /* border-bottom: 1px solid #ddd; */
+}
+
+/* Styles for each header cell in the legend */
+.legend-header div {
+    padding: 8px;
+}
+
+/* Styles for each row in the legend */
+.legend-row {
+    display: flex;
+    align-items: center;
+    /* border-bottom: 1px solid #ddd; */
+}
+
+/* Alternate row coloring for better readability */
+.legend-row:nth-child(even) {
+    background-color: #3d4149; /* Slightly lighter row color for contrast */
+}
+
+.legend-row:nth-child(odd) {
+    background-color: #2d3039; /* Same as container background color */
+}
+
+/* Styles for each cell in the row */
+.legend-row div {
+    padding: 8px;
+}
+
+/* Styles for the color picker input */
+.legend-color-picker {
+    width: 30px;
+    height: 30px;
+    border: none;
+    cursor: pointer;
+}
+
+.variable-col {
+    flex: 2;
+}
+
+.count-col {
+    flex: 1;
+    text-align: center;
+}
+
+.color-col {
+    flex: 1;
+    text-align: center;
 }

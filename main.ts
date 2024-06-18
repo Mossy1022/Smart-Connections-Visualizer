@@ -15,8 +15,20 @@ const DEFAULT_NETWORK_SETTINGS : any = {
 	maxLabelCharacters: 18,
 	linkLabelSize: 7,
 	nodeLabelSize: 6,
-	connectionType: 'block'
+	connectionType: 'block',
+	noteFillColor: '#7c8594',
+	blockFillColor: '#926ec9'
 }
+
+/*
+	Main Colors
+	Menu text: #a3aecb
+	HoveredOverNode: #d46ebe
+	NormalNode: #926ec9
+	centralNode: #7c8594
+	Link: #4c7787
+	SliderKnob: #f3ee5d
+*/
 
 interface PluginSettings {
     relevanceScoreThreshold: number;
@@ -33,6 +45,8 @@ interface PluginSettings {
     linkLabelSize: number;
     nodeLabelSize: number;
 	connectionType: string;
+	noteFillColor: string;
+	blockFillColor: string;
 }
 
 declare global {
@@ -78,6 +92,8 @@ class ScGraphItemView extends ItemView {
 	maxLabelCharacters = 18;
 	linkLabelSize = 7;
 	nodeLabelSize = 6;
+	blockFillColor = '#926ec9';
+	noteFillColor = '#7c8594';
 	startX = 0;
 	startY = 0;
 	nodes : any = [];
@@ -90,8 +106,8 @@ class ScGraphItemView extends ItemView {
 	dragging = false;
 	highlightedNodeId = '-1';
 	currentNoteChanging = false;
-	isFiltering = false;
-	
+	isFiltering = false;	
+	settingsMade = false;
 
     constructor(leaf: WorkspaceLeaf, plugin: ScGraphView) {
         super(leaf);
@@ -114,6 +130,8 @@ class ScGraphItemView extends ItemView {
         this.linkLabelSize = this.plugin.settings.linkLabelSize;
         this.nodeLabelSize = this.plugin.settings.nodeLabelSize;
         this.connectionType = this.plugin.settings.connectionType;
+		this.noteFillColor = this.plugin.settings.noteFillColor;
+		this.blockFillColor = this.plugin.settings.blockFillColor;
 
     }
 
@@ -131,18 +149,18 @@ class ScGraphItemView extends ItemView {
 
 	updateNodeAppearance() {
 		this.nodeSelection.transition().duration(500)
-			.attr('fill', (d: any) => this.getNodeFill(d))
+			.attr('fill', (d: any) => d.fill)
 			.attr('stroke', (d: any) => d.selected ? 'blanchedalmond' : (d.highlighted ? '#d46ebe' : 'transparent'))
 			.attr('stroke-width', (d: any) => d.selected ? 1.5 : (d.highlighted ? 0.3 : 0))
 			.attr('opacity', (d: any) => this.getNodeOpacity(d));
 	}
 	
 
-	getNodeFill(d: any) {
-		if (d.id === this.centralNode.id) return '#7c8594';
-		if (d.highlighted && !d.selected) return '#d46ebe';
-		return d.group === 'note' ? '#7c8594' : '#926ec9';
-	}
+	// getNodeFill(d: any) {
+	// 	if (d.id === this.centralNode.id) return '#7c8594';
+	// 	if (d.highlighted && !d.selected) return '#d46ebe';
+	// 	return d.group === 'note' ? '#7c8594' : '#926ec9';
+	// }
 
 	getNodeOpacity(d: any) {
 		if (d.id === this.centralNode.id) return 1;
@@ -452,6 +470,100 @@ class ScGraphItemView extends ItemView {
 
 	}
 
+
+	renderLegend() {
+		if (this.validatedLinks.length === 0) {
+			return;
+		}
+
+		const types = ['block', 'note']; // Connection types
+		const counts = types.map(type => this.nodes.filter((node: any) => (node.group === type) && node.id !== this.centralNode.id).length);
+
+		// Initialize colors with default values
+    	let colors: { [key: string]: string } = { 'block': DEFAULT_NETWORK_SETTINGS.blockFillColor, 'note': DEFAULT_NETWORK_SETTINGS.noteFillColor }; 
+
+		// Iterate over nodes to find the color for each type
+		for (let node of this.nodes) {
+			if (colors[node.group]) {
+				colors[node.group] = node.fill;
+			}
+		}	
+
+		// Use contentEl to create a table container
+		const tableContainer = this.contentEl.createEl('div', { cls: 'legend-container' });
+
+		// Create table header
+		const header = tableContainer.createEl('div', { cls: 'legend-header' });
+		['Connection Type', 'Count', 'Color'].forEach(headerTitle => {
+
+			// Assign appropiate class based on column
+			switch(headerTitle) {
+				case "Connection Type":
+					header.createEl('div', { text: headerTitle, cls: 'variable-col' });
+					break;
+				case "Count":
+					header.createEl('div', { text: headerTitle, cls: 'count-col' });
+					break;
+				case "Color":
+					header.createEl('div', { text: headerTitle, cls: 'color-col' });
+					break;
+				default:
+					header.createEl('div', { text: headerTitle, cls: 'variable-col' });
+					break
+			}
+
+		});
+
+		// Create rows for each type
+		types.forEach((type, index) => {
+			if (counts[index] > 0) { // Check if the count is greater than zero
+				const row = tableContainer.createEl('div', { cls: 'legend-row' });
+				
+				row.createEl('div', { text: this.capitalizeFirstLetter(type), cls: 'variable-col' });
+				row.createEl('div', { text: `${counts[index]}`, cls: 'count-col' });
+				
+				const colorCell = row.createEl('div', { cls: 'color-col' });
+				const colorPicker = colorCell.createEl('input', { type: 'color', value: colors[type as keyof typeof colors], cls: 'legend-color-picker' });
+	
+				colorPicker.addEventListener('change', (e) => this.updateNodeColors(type, (e.target as HTMLInputElement).value));
+			}
+		});
+	}
+
+	capitalizeFirstLetter(str: string): string {
+		if (!str) return str;
+		console.log('string: ', str);
+		return str.charAt(0).toUpperCase() + str.slice(1);
+	}
+
+	updateNodeColors(type: string, color: string) {
+
+		if (type === 'note' && color !== this.noteFillColor) {
+			this.noteFillColor = color;
+			this.plugin.settings.noteFillColor = color;
+			this.plugin.saveSettings(); // Save the settings		
+		}
+
+		if (type === 'block' && color !== this.blockFillColor) {
+			this.blockFillColor = color;
+			this.plugin.settings.noteFillColor = color;
+			this.plugin.saveSettings(); // Save the settings		
+		}
+
+
+        this.nodes.forEach((node : any) => {
+            if (node.group === type) {
+                node.fill = color;
+            }
+        });
+        this.updateNodeFill();
+    }
+
+    updateNodeFill() {
+        // Update the D3 visualization here
+        this.nodeSelection.attr('fill', (d: any) => d.fill);
+    }
+
 	// Ensure node labels dont collide with any elements
 	avoidLabelCollisions() {
 		const padding = 5; // Adjust padding as needed
@@ -483,33 +595,6 @@ class ScGraphItemView extends ItemView {
 				});
 			});
 		};
-	}
-	
-
-	createNodes(svgGroup: any) {
-		return svgGroup.append('g')
-			.attr('class', 'nodes')
-			.selectAll('circle')
-			.data([])
-			.enter().append('circle')
-			.attr('r', 20)
-			.attr('fill', 'blue')
-			.style('cursor', 'pointer') // Ensure cursor is pointer
-			.style('pointer-events', 'all') // Ensure nodes can capture pointer events
-			.call(d3.drag().on('start', this.onDragStart.bind(this))
-				.on('drag', this.onDrag.bind(this))
-				.on('end', this.onDragEnd.bind(this)));
-	}
-
-	createLinks(svgGroup: any) {
-		return svgGroup.append('g')
-			.attr('class', 'links')
-			.selectAll('line')
-			.data([])
-			.enter().append('line')
-			.attr('stroke', 'blue')
-			.attr('stroke-width', 2)
-			.attr('stroke-opacity', 1);
 	}
 
 	addEventListeners() {
@@ -566,7 +651,7 @@ class ScGraphItemView extends ItemView {
 	}
 
 	setupSettingsMenu() {
-		if (!document.querySelector('.settings-icon')) {
+		if (!document.querySelector('.smart-connections-visualizer-settings-icon')) {
 			this.createSettingsIcon();
 			this.createDropdownMenu();
 			this.setupAccordionHeaders();
@@ -766,7 +851,7 @@ class ScGraphItemView extends ItemView {
 	createSettingsIcon() {
 		// Create the container div for the settings icon
 		const settingsIcon = this.contentEl.createEl('div', {
-			cls: ['settings-icon', ],
+			cls: ['smart-connections-visualizer-settings-icon', ],
 			attr: { 'aria-label': 'Open graph settings' }
 		});
 	
@@ -1122,6 +1207,8 @@ class ScGraphItemView extends ItemView {
 	}
 
 	resetToDefault() {
+
+		// Reset all values to their default
 		this.relevanceScoreThreshold = DEFAULT_NETWORK_SETTINGS.relevanceScoreThreshold;
 		this.nodeSize = DEFAULT_NETWORK_SETTINGS.nodeSize;
 		this.linkThickness = DEFAULT_NETWORK_SETTINGS.lineThickness;
@@ -1136,15 +1223,10 @@ class ScGraphItemView extends ItemView {
 		this.linkLabelSize = DEFAULT_NETWORK_SETTINGS.linkLabelSize;
 		this.nodeLabelSize = DEFAULT_NETWORK_SETTINGS.nodeLabelSize;
 		this.connectionType = DEFAULT_NETWORK_SETTINGS.connectionType;
+		this.noteFillColor = DEFAULT_NETWORK_SETTINGS.noteFillColor;
+		this.blockFillColor = DEFAULT_NETWORK_SETTINGS.blockFillColor;
 
-		this.updateLabelsToDefaults();
-		this.updateSliders();
-		this.updateNodeSizes();
-		this.updateLinkThickness();
-		this.updateSimulationForces();
-		this.updateVisualization(this.relevanceScoreThreshold);
-
-		// Update plugin settings
+		// Save plugin settings
 		this.plugin.settings.relevanceScoreThreshold = DEFAULT_NETWORK_SETTINGS.relevanceScoreThreshold;
 		this.plugin.settings.nodeSize = DEFAULT_NETWORK_SETTINGS.nodeSize;
 		this.plugin.settings.linkThickness = DEFAULT_NETWORK_SETTINGS.lineThickness;
@@ -1159,7 +1241,17 @@ class ScGraphItemView extends ItemView {
 		this.plugin.settings.linkLabelSize = DEFAULT_NETWORK_SETTINGS.linkLabelSize;
 		this.plugin.settings.nodeLabelSize = DEFAULT_NETWORK_SETTINGS.nodeLabelSize;
 		this.plugin.settings.connectionType = DEFAULT_NETWORK_SETTINGS.connectionType;
+		this.plugin.settings.noteFillColor = DEFAULT_NETWORK_SETTINGS.noteFillColor;
+		this.plugin.settings.blockFillColor = DEFAULT_NETWORK_SETTINGS.blockFillColor;
         this.plugin.saveSettings(); // Save the settings
+
+		// Update visualization
+		this.updateLabelsToDefaults();
+		this.updateSliders();
+		this.updateNodeSizes();
+		this.updateLinkThickness();
+		this.updateSimulationForces();
+		this.updateVisualization(this.relevanceScoreThreshold);
 
 	}
 
@@ -1315,6 +1407,16 @@ class ScGraphItemView extends ItemView {
 		this.simulation.alpha(1).restart();
 	
 		this.updatingVisualization = false;
+
+		// TODO: Comment back when pushing legend
+		// First, clear the existing legend if it exists
+		// const existingLegend = this.contentEl.querySelector('.legend-container');
+		// if (existingLegend) {
+		// 	existingLegend.remove();
+		// }
+
+		// Now, re-render the legend with updated node data
+		// this.renderLegend();
 	}
 
 	simulationTickHandler() {
@@ -1363,6 +1465,7 @@ class ScGraphItemView extends ItemView {
 				y: height / 2,
 				fx: null,
 				fy: null,
+				fill: this.noteFillColor,
 				selected: false,
 				highlighted: false
 			});
@@ -1409,6 +1512,7 @@ class ScGraphItemView extends ItemView {
 				y: Math.random() * 1000,
 				fx: null,
 				fy: null,
+				fill: connection.__proto__.constructor.name === 'SmartBlock' ? this.blockFillColor : this.noteFillColor,
 				selected: false,
 				highlighted: false
 			});
@@ -1523,7 +1627,7 @@ class ScGraphItemView extends ItemView {
 		return enter.append('circle')
 			.attr('class', 'node')
 			.attr('r', (d: any) => d.id === this.centralNode.id ? this.nodeSize + 2 : this.nodeSize)
-			.attr('fill', (d: any) => this.getNodeFill(d))
+			.attr('fill', (d: any) => d.fill)
 			.attr('stroke', (d: any) => d.selected ? 'blanchedalmond' : 'transparent')
 			.attr('stroke-width', (d: any) => d.selected ? 1.5 : 0.3)
 			.attr('opacity', 1)
@@ -1538,7 +1642,7 @@ class ScGraphItemView extends ItemView {
 
 	updateNode(update: any) {
 		return update.attr('r', (d: any) => d.id === this.centralNode.id ? this.nodeSize + 2 : this.nodeSize)
-			.attr('fill', (d: any) => d.selected ? '#f3ee5d' : this.getNodeFill(d))
+			.attr('fill', (d: any) => d.selected ? '#f3ee5d' : d.fill)
 			.attr('stroke', (d: any) => d.selected ? 'blanchedalmond' : 'transparent')
 			.attr('stroke-width', (d: any) => d.selected ? 1.5 : 0.3);
 	}
@@ -1930,15 +2034,6 @@ class ScGraphItemView extends ItemView {
 
 }
 
-/*
-	Main Colors
-	Menu text: #a3aecb
-	HoveredOverNode: #d46ebe
-	NormalNode: #926ec9
-	centralNode: #7c8594
-	Link: #4c7787
-	SliderKnob: #f3ee5d
-*/
 	
 export default class ScGraphView extends Plugin {
 
