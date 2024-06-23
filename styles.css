@@ -49,7 +49,7 @@ svg .nodes circle {
     color: #bbb;
     z-index: 999; /* Ensure the icon stays above other elements */
 }
-.dropdown-menu {
+.sc-visualizer-dropdown-menu {
     font-family: 'Cascadia';
     display: none;
     position: absolute;
@@ -62,14 +62,14 @@ svg .nodes circle {
     width: 300px;
     z-index: 1000; /* Ensure the menu stays above other elements */
 }
-.dropdown-menu {
+.sc-visualizer-dropdown-menu {
     background-color: rgba(51, 51, 51, 0.9) !important;
 }
 
-.dropdown-menu.visible {
+.sc-visualizer-dropdown-menu.visible {
     display: block !important;
 }
-.dropdown-menu.open {
+.sc-visualizer-dropdown-menu.open {
     display: block !important;
 }
 .menu-header {

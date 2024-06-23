@@ -660,7 +660,7 @@ class ScGraphItemView extends ItemView {
 	}
 
 	createDropdownMenu() {
-		const dropdownMenu = this.contentEl.createEl('div', { cls: 'dropdown-menu' });
+		const dropdownMenu = this.contentEl.createEl('div', { cls: 'sc-visualizer-dropdown-menu' });
 		this.buildDropdownMenuContent(dropdownMenu);
 	}
 
@@ -793,7 +793,7 @@ class ScGraphItemView extends ItemView {
 	}
 	
 	toggleDropdownMenu() {
-		const dropdownMenu = document.querySelector('.dropdown-menu') as HTMLElement;
+		const dropdownMenu = document.querySelector('.sc-visualizer-dropdown-menu') as HTMLElement;
 	
 		if (dropdownMenu) {
 	
@@ -1197,7 +1197,7 @@ class ScGraphItemView extends ItemView {
 	}
 
 	closeDropdownMenu() {
-		const dropdownMenu = document.querySelector('.dropdown-menu');
+		const dropdownMenu = document.querySelector('.sc-visualizer-dropdown-menu');
 		if (dropdownMenu) dropdownMenu.classList.remove('open');
 	}
 
