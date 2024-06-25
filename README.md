@@ -5,6 +5,7 @@
 Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seamlessly with the Smart Connections tool, offering an advanced, interactive way to visualize connections between your notes. My goal is to enhance your ability to discover relationships and insights within your notes, transforming the way you interact with and understand your information. 
 
 [Watch the Demo](https://www.youtube.com/watch?v=dbFRyJBkxS0)
+
 [Install Smart Connections Visualizer](https://obsidian.md/plugins?id=smart-connections-visualizer)
 
 ![App Demo](Intro.gif)
