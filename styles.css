@@ -1,42 +1,30 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
-
-.link {
+.smart-connections-visualizer-link {
     stroke: #4c7787;
     stroke-opacity: 1;
     cursor: pointer;
 }
-.label {
+.smart-connections-visualizer-label {
     pointer-events: none;
     fill: #bbb;
     text-shadow: 0px 0px 2px black;
     font-family: 'Cascadia';
 }
-.link-label {
+.smart-connections-visualizer-link-label {
     font-family: 'Cascadia';
 }
 
-.node:hover {
+.smart-connections-visualizer-node:hover {
     stroke: #fff;
     cursor: pointer;
     stroke-width: 0.4px;
 }
 
-svg {
-    pointer-events: all;
-}
 
-svg .nodes circle {
+svg .smart-connections-visualizer-nodes circle {
     cursor: pointer;
 }
 
-.node {
+.smart-connections-visualizer-node {
     cursor: pointer;
 }
 
@@ -72,45 +60,48 @@ svg .nodes circle {
 .sc-visualizer-dropdown-menu.open {
     display: block !important;
 }
-.menu-header {
+.smart-connections-visualizer-menu-header {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 5px;
     font-family: sans-serif;
 }
-.menu-header .icon {
+.smart-connections-visualizer-menu-header .smart-connections-visualizer-icon {
     cursor: pointer;
     font-size: 19px;
     color: #bbb;
     margin-left: 10px;
     margin-top: -2px;
 }
-.menu-header .icon:hover {
+.smart-connections-visualizer-menu-header .smart-connections-visualizer-icon:hover {
     color: #fff;
 }
-.accordion-item {
+.smart-connections-visualizer-accordion-item {
     margin-bottom: 10px;
     color: #a3aecb;
 }
 
-.slider {
+.smart-connections-visualizer-slider {
     width: 100% !important;
 }
 
-.slider-container {
+.smart-connections-visualizer-slider-container {
     margin-bottom: 8px;
 }
 
-#score-threshold-label {
+.smart-connections-visualizer-score-threshold-label {
     text-wrap: nowrap;
 }
 
-#refresh-icon {
+#smart-connections-visualizer-refresh-icon {
     font-size: 28px;
-    margin-top: -9px;
+    margin-top: -2px;
+    width: 20px;
+    height: 20px;
+    display: flex;
 }
 
-.lucide-x {
+.smart-connections-visualizer-lucide-x {
     height: 24px !important;
     width: 24px !important;
 }
@@ -134,7 +125,7 @@ svg .nodes circle {
     right: 14px;
 }
 
-.accordion-header {
+.smart-connections-visualizer-accordion-header {
     cursor: pointer;
     background-color: #444;
     color: #fff;
@@ -143,46 +134,46 @@ svg .nodes circle {
     display: block;
     align-items: center;
 }
-.accordion-header:hover {
+.smart-connections-visualizer-accordion-header:hover {
     background-color: #555;
 }
-.accordion-content {
+.smart-connections-visualizer-accordion-content {
     display: none;
     padding: 10px;
     background-color: #333;
     border-radius: 5px;
 }
-.accordion-content.show {
+.smart-connections-visualizer-accordion-content.show {
     display: block;
 }
-.dropdown-indicator {
+.smart-connections-visualizer-dropdown-indicator {
     width: 16px;
     height: 16px;
     margin-right: 8px;
     vertical-align: middle;
 }
 
-.radio-container {
+.smart-connections-visualizer-radio-container {
     margin-top: 10px;
 }
 
-.radio-container label {
+.smart-connections-visualizer-radio-container label {
     margin-right: 10px;
     color: #a3aecb;
 }
 
-.settings-item-content-label {
+.smart-connections-visualizer-settings-item-content-label {
     margin-right: 20px;
 }
 
-.selection-box {
+.smart-connections-visualizer-selection-box {
     stroke: #00f;
     stroke-width: 1;
     fill: rgba(0, 0, 255, 0.3);
 }
 
 /* Styles for the legend container */
-.legend-container {
+.smart-connections-visualizer-legend-container {
     width: 295px;
     border-collapse: collapse;
     background-color: #2d3039; /* Dark background color similar to settings menu */
@@ -193,7 +184,7 @@ svg .nodes circle {
 }
 
 /* Styles for the legend header */
-.legend-header {
+.smart-connections-visualizer-legend-header {
     display: flex;
     background-color: #303030; /* Darker background color for header */
     text-align: left;
@@ -201,49 +192,49 @@ svg .nodes circle {
 }
 
 /* Styles for each header cell in the legend */
-.legend-header div {
+.smart-connections-visualizer-legend-header div {
     padding: 8px;
 }
 
 /* Styles for each row in the legend */
-.legend-row {
+.smart-connections-visualizer-legend-row {
     display: flex;
     align-items: center;
     /* border-bottom: 1px solid #ddd; */
 }
 
 /* Alternate row coloring for better readability */
-.legend-row:nth-child(even) {
+.smart-connections-visualizer-legend-row:nth-child(even) {
     background-color: #3d4149; /* Slightly lighter row color for contrast */
 }
 
-.legend-row:nth-child(odd) {
+.smart-connections-visualizer-legend-row:nth-child(odd) {
     background-color: #2d3039; /* Same as container background color */
 }
 
 /* Styles for each cell in the row */
-.legend-row div {
+.smart-connections-visualizer-legend-row div {
     padding: 8px;
 }
 
 /* Styles for the color picker input */
-.legend-color-picker {
+.smart-connections-visualizer-legend-color-picker {
     width: 30px;
     height: 30px;
     border: none;
     cursor: pointer;
 }
 
-.variable-col {
+.smart-connections-visualizer-variable-col {
     flex: 2;
 }
 
-.count-col {
+.smart-connections-visualizer-count-col {
     flex: 1;
     text-align: center;
 }
 
-.color-col {
+.smart-connections-visualizer-color-col {
     flex: 1;
     text-align: center;
 }
