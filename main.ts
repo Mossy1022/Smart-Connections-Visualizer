@@ -1,5 +1,6 @@
 import { Plugin, ItemView, WorkspaceLeaf, debounce, Notice } from 'obsidian';
 import * as d3 from "d3";
+import _ from 'lodash';
 
 const DEFAULT_NETWORK_SETTINGS : any = {
 	relevanceScoreThreshold: 0.5,
@@ -1322,7 +1323,7 @@ class ScGraphItemView extends ItemView {
 
 	watchForNoteChanges() {
 		this.app.workspace.on('file-open', (file) => {
-			if (file && (this.currentNoteKey !== file.path) && !this.isHovering) {
+			if (file && (this.currentNoteKey !== file.path) && !this.isHovering && this.containerEl.children[1].checkVisibility()) {
 				this.currentNoteKey = file.path;
 				this.currentNoteChanging = true;
 				this.render();
@@ -1458,6 +1459,10 @@ class ScGraphItemView extends ItemView {
 		this.maxScore = 0;
 		if (!this.currentNoteKey) return;
 		this.centralNote = this.smartNotes[this.currentNoteKey];
+		console.log('central note: ', this.centralNote);
+
+		// console.log('central note connections: ', parse(stringify(this.centralNote.find_connections())));
+
 		const noteConnections = this.centralNote.find_connections().filter(
 			(connection: any) => connection.score >= this.relevanceScoreThreshold);
 		this.addCentralNode();

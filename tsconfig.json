@@ -10,6 +10,8 @@
     "moduleResolution": "node",
     "importHelpers": true,
     "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true, // This is often recommended alongside
 	"strictNullChecks": true,
     "lib": [
       "DOM",
