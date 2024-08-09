@@ -21,6 +21,7 @@ const DEFAULT_NETWORK_SETTINGS : any = {
 	blockFillColor: '#926ec9'
 }
 
+
 /*
 	Main Colors
 	Menu text: #a3aecb
