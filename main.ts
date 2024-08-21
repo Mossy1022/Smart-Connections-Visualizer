@@ -327,7 +327,7 @@ class ScGraphItemView extends ItemView {
 	}
 
 	get env() { return window.SmartSearch?.main?.env; }
-	get smartNotes() { return window.SmartSearch?.main?.env?.smart_notes?.items; }
+	get smartNotes() { return window.SmartSearch?.main?.env?.smart_sources?.items; }
 	
 
 	async onOpen() {
