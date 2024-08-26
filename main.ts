@@ -355,7 +355,7 @@ class ScGraphItemView extends ItemView {
 		}
 		this.setupSettingsMenu();
 		this.setupSVG();
-		this.addEventListeners();
+		this.addEventListeners();		
 		this.watchForNoteChanges();
 
 		// Load latest active file if opening view for first time
@@ -809,7 +809,6 @@ class ScGraphItemView extends ItemView {
 		const dropdownMenu = document.querySelector('.sc-visualizer-dropdown-menu') as HTMLElement;
 	
 		if (dropdownMenu) {
-	
 			dropdownMenu.classList.toggle('visible');
 	
 		} else {
@@ -1932,7 +1931,9 @@ class ScGraphItemView extends ItemView {
 		newOpacity = Math.max(minOpacity, Math.min(maxOpacity, newOpacity));
 		
 		// Update node labels opacity based on zoom level
-		this.labelSelection.transition().duration(300).attr('opacity', newOpacity);
+		if(this.labelSelection) {
+			this.labelSelection.transition().duration(300).attr('opacity', newOpacity);
+		}
 	}	
 	
 
