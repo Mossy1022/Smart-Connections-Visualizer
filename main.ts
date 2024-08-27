@@ -1503,7 +1503,9 @@ class ScGraphItemView extends ItemView {
 			if (this.connectionType === 'both') {
 				return true; // return all connections
 			} else {
-				return connection.__proto__.constructor.name === (this.connectionType === 'block' ? 'SmartBlock' : 'SmartNote');
+				// If connectionType is block, return true if connection is a SmartBlock, otherwise return false
+				return (this.connectionType === 'block') === (connection instanceof this.env.item_types.SmartBlock);
+
 			}
 		});		// console.log('Filtered connections:', filteredConnections);
 		filteredConnections.forEach((connection: any, index: any) => {
