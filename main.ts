@@ -1510,8 +1510,8 @@ class ScGraphItemView extends ItemView {
 		});		// console.log('Filtered connections:', filteredConnections);
 		filteredConnections.forEach((connection: any, index: any) => {
 			// console.log('Filtered connection:', connection, 'Index:', index);
-			if (connection && connection.data && connection.data.key) {
-				const connectionId = connection.data.key;
+			if (connection && connection.key) {
+				const connectionId = connection.key;
 				// console.log('Adding connection node for ID:', connectionId);
 
 				this.addConnectionNode(connection);
@@ -1519,7 +1519,7 @@ class ScGraphItemView extends ItemView {
 
 				this.addConnectionLink(connectionId, connection);
 			} else {
-				// console.warn(`Skipping invalid connection at index ${index}:`, connection);
+				console.warn(`Skipping invalid connection at index ${index}:`, connection);
 			}
 		});
 		// console.log('Nodes after addFilteredConnections:', this.nodes);
@@ -1531,12 +1531,12 @@ class ScGraphItemView extends ItemView {
 			this.nodes.push({
 				id: connection.data.key,
 				name: connection.data.key,
-				group: connection.__proto__.constructor.name === 'SmartBlock' ? 'block' : 'note',				
+				group: (connection instanceof this.env.item_types.SmartBlock) ? 'block' : 'note',				
 				x: Math.random() * 1000,
 				y: Math.random() * 1000,
 				fx: null,
 				fy: null,
-				fill: connection.__proto__.constructor.name === 'SmartBlock' ? this.blockFillColor : this.noteFillColor,
+				fill: (connection instanceof this.env.item_types.SmartBlock) ? this.blockFillColor : this.noteFillColor,
 				selected: false,
 				highlighted: false
 			});
