@@ -1514,7 +1514,7 @@ class ScGraphItemView extends ItemView {
 				const connectionId = connection.key;
 				// console.log('Adding connection node for ID:', connectionId);
 
-				this.addConnectionNode(connection);
+				this.addConnectionNode(connectionId, connection);
 				// console.log('Adding connection link for ID:', connectionId);
 
 				this.addConnectionLink(connectionId, connection);
@@ -1526,12 +1526,12 @@ class ScGraphItemView extends ItemView {
 		// console.log('Links after addFilteredConnections:', this.links);	
 	}
 
-	addConnectionNode(connection: any) {
-		if (!this.nodes.some((node: { id: string; }) => node.id === connection.data.key)) {
+	addConnectionNode(connectionId: any, connection: any) {
+		if (!this.nodes.some((node: { id: string; }) => node.id === connectionId)) {
 			this.nodes.push({
-				id: connection.data.key,
-				name: connection.data.key,
-				group: (connection instanceof this.env.item_types.SmartBlock) ? 'block' : 'note',				
+				id: connectionId,
+				name: connectionId,
+				group: (connection instanceof this.env.item_types.SmartBlock) ? 'block' : 'note',
 				x: Math.random() * 1000,
 				y: Math.random() * 1000,
 				fx: null,
@@ -1541,7 +1541,7 @@ class ScGraphItemView extends ItemView {
 				highlighted: false
 			});
 		} else {
-			console.log('Node already exists for connection ID:',connection.data.key);
+			console.log('Node already exists for connection ID:',connectionId);
 		}
 	}
 	
