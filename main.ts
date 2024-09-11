@@ -2057,22 +2057,28 @@ export default class ScGraphView extends Plugin {
 		// Register the new view
         this.registerView("smart-connections-visualizer", (leaf: WorkspaceLeaf) => new ScGraphItemView(leaf, this));
 
-				// Register hover link source
-				this.registerHoverLinkSource('smart-connections-visualizer', {
-					display: 'Smart connections visualizer hover link source',
-					defaultMod: true
-				});
+		// Register hover link source
+		this.registerHoverLinkSource('smart-connections-visualizer', {
+			display: 'Smart connections visualizer hover link source',
+			defaultMod: true
+		});
 
         // This creates an icon in the left ribbon.
         this.addRibbonIcon('git-fork', 'Open smart connections visualizer', (evt: MouseEvent) => {
-            // Create a new leaf in the current workspace
-            let leaf = this.app.workspace.getLeaf(true);
-    
-            // Set the new leaf's view to your custom view
-            leaf.setViewState({
-                type: "smart-connections-visualizer",
-                active: true,
-            });
+           	// Check if the view is already open
+			const existingLeaf = this.app.workspace.getLeavesOfType("smart-connections-visualizer")[0];
+			if (existingLeaf) {
+				// If it exists, focus on it
+				this.app.workspace.setActiveLeaf(existingLeaf);
+			} else {
+				// Create a new leaf in the current workspace
+				let leaf = this.app.workspace.getLeaf(true);
+				// Set the new leaf's view to your custom view
+				leaf.setViewState({
+					type: "smart-connections-visualizer",
+					active: true,
+				});
+			}
         })
 		
 
