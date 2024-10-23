@@ -1504,14 +1504,14 @@ class ScGraphItemView extends ItemView {
 				return true; // return all connections
 			} else {
 				// If connectionType is block, return true if connection is a SmartBlock, otherwise return false
-				return (this.connectionType === 'block') === (connection instanceof this.env.item_types.SmartBlock);
+				return (this.connectionType === 'block') === (connection.item instanceof this.env.item_types.SmartBlock);
 
 			}
 		});		// console.log('Filtered connections:', filteredConnections);
 		filteredConnections.forEach((connection: any, index: any) => {
 			// console.log('Filtered connection:', connection, 'Index:', index);
-			if (connection && connection.key) {
-				const connectionId = connection.key;
+			if (connection && connection.item && connection.item.key) {
+				const connectionId = connection.item.key;
 				// console.log('Adding connection node for ID:', connectionId);
 
 				this.addConnectionNode(connectionId, connection);
@@ -1531,12 +1531,12 @@ class ScGraphItemView extends ItemView {
 			this.nodes.push({
 				id: connectionId,
 				name: connectionId,
-				group: (connection instanceof this.env.item_types.SmartBlock) ? 'block' : 'note',
+				group: (connection.item instanceof this.env.item_types.SmartBlock) ? 'block' : 'note',
 				x: Math.random() * 1000,
 				y: Math.random() * 1000,
 				fx: null,
 				fy: null,
-				fill: (connection instanceof this.env.item_types.SmartBlock) ? this.blockFillColor : this.noteFillColor,
+				fill: (connection.item instanceof this.env.item_types.SmartBlock) ? this.blockFillColor : this.noteFillColor,
 				selected: false,
 				highlighted: false
 			});
