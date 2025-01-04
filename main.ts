@@ -367,7 +367,7 @@ class ScGraphItemView extends ItemView {
 			return
 		}
 				
-		
+
 		this.updateVisualization();
 	}
 
@@ -1331,7 +1331,7 @@ class ScGraphItemView extends ItemView {
 		});
 	}
 
-	updateVisualization(newScoreThreshold?: number) {
+	async updateVisualization(newScoreThreshold?: number) {
 
 		// Only update if we're not already updating
 		if (this.updatingVisualization && !this.isChangingConnectionType) {
@@ -1346,7 +1346,7 @@ class ScGraphItemView extends ItemView {
 			this.relevanceScoreThreshold = newScoreThreshold;
 		}
 	
-		this.updateConnections();
+		await this.updateConnections();
 
 		const filteredConnections = this.connections.filter((connection: any) => connection.score >= this.relevanceScoreThreshold);
 		const visibleNodes = new Set<string>();
@@ -1451,7 +1451,7 @@ class ScGraphItemView extends ItemView {
 	
 	
 	
-	updateConnections() {
+	async updateConnections() {
 		this.nodes = [];
 		this.links = [];
 		this.connections = [];
@@ -1463,8 +1463,11 @@ class ScGraphItemView extends ItemView {
 
 		// console.log('central note connections: ', parse(stringify(this.centralNote.find_connections())));
 
-		const noteConnections = this.centralNote.find_connections().filter(
-			(connection: any) => connection.score >= this.relevanceScoreThreshold);
+		   // Await the asynchronous find_connections method
+		   const connections = await this.centralNote.find_connections();
+		   const noteConnections = connections.filter(
+			   (connection: any) => connection.score >= this.relevanceScoreThreshold
+		   );
 		this.addCentralNode();
 		this.addFilteredConnections(noteConnections);
 		const isValid = this.validateGraphData(this.nodes, this.links);
