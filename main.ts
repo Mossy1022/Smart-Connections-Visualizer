@@ -344,7 +344,7 @@ class ScGraphItemView extends ItemView {
 
 	async render() {
 		// wait until this.smartNotes is available
-		while (!this.env?.entities_loaded) {
+		while (!this.env?.collections_loaded) {
 			await new Promise(resolve => setTimeout(resolve, 2000));
 		}
 
@@ -377,7 +377,7 @@ class ScGraphItemView extends ItemView {
 	
 		for (let attempt = 0; attempt < maxRetries; attempt++) {
 			console.log(this.env);
-			if (this.env?.entities_loaded) {
+			if (this.env?.collections_loaded) {
 				return;
 			}
 			await new Promise(resolve => setTimeout(resolve, delay));
@@ -1323,6 +1323,7 @@ class ScGraphItemView extends ItemView {
 
 	watchForNoteChanges() {
 		this.app.workspace.on('file-open', (file) => {
+			// @ts-ignore
 			if (file && (this.currentNoteKey !== file.path) && !this.isHovering && this.containerEl.children[1].checkVisibility()) {
 				this.currentNoteKey = file.path;
 				this.currentNoteChanging = true;
