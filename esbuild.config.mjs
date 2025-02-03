@@ -15,6 +15,11 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
+const package_json = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json')));
+const manifest_json = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'manifest.json')));
+manifest_json.version = package_json.version;
+fs.writeFileSync(path.join(process.cwd(), 'manifest.json'), JSON.stringify(manifest_json, null, 2));
+
 
 const copy_to_plugins = {
 	name: 'copy_to_plugins',
