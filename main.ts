@@ -2079,6 +2079,7 @@ export default class ScGraphView extends Plugin {
 				// Create a new leaf in the current workspace
 				let leaf = this.app.workspace.getRightLeaf(false);
 				// Set the new leaf's view to your custom view
+				// @ts-ignore
 				leaf.setViewState({
 					type: "smart-connections-visualizer",
 					active: true,
