@@ -326,7 +326,7 @@ class ScGraphItemView extends ItemView {
 		return label.length > this.maxLabelCharacters ? label.slice(0, this.maxLabelCharacters) + '...' : label;
 	}
 
-	get env() { return window.SmartSearch?.main?.env; }
+	get env() { return window.smart_env; }
 	get smartNotes() { return window.SmartSearch?.main?.env?.smart_sources?.items; }
 	
 
