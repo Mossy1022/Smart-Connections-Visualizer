@@ -1,11 +1,11 @@
 {
-	"id": "smart-connections-visualizer",
-	"name": "Smart Connections Visualizer",
-	"version": "1.0.25",
-	"minAppVersion": "0.15.0",
-	"description": "View your Smart Connections in a visualized format.",
-	"author": "Evan Moscoso",
-	"authorUrl": "https://github.com/mossy1022",
-	"fundingUrl": "https://buymeacoffee.com/evansoasis",
-	"isDesktopOnly": true
+  "id": "smart-connections-visualizer",
+  "name": "Smart Connections Visualizer",
+  "version": "1.0.25",
+  "minAppVersion": "0.15.0",
+  "description": "View your Smart Connections in a visualized format.",
+  "author": "Evan Moscoso",
+  "authorUrl": "https://github.com/mossy1022",
+  "fundingUrl": "https://buymeacoffee.com/evansoasis",
+  "isDesktopOnly": true
 }
