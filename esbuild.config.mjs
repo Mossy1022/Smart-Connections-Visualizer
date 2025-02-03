@@ -25,13 +25,19 @@ const copy_to_plugins = {
 			if (!fs.existsSync(plugin_path)) {
 				fs.mkdirSync(plugin_path);
 			}
+			// copy manifest and styles to dist folder
+			fs.copyFileSync("./manifest.json", "./dist/manifest.json");
+			fs.copyFileSync("./styles.css", "./dist/styles.css");
 			
-			fs.copyFileSync("./main.js", path.join(plugin_path, "main.js"));
-			fs.copyFileSync("./manifest.json", path.join(plugin_path, "manifest.json"));
-			fs.copyFileSync("./styles.css", path.join(plugin_path, "styles.css"));
+
+
+			fs.copyFileSync("./dist/main.js", path.join(plugin_path, "main.js"));
+			fs.copyFileSync("./dist/manifest.json", path.join(plugin_path, "manifest.json"));
+			fs.copyFileSync("./dist/styles.css", path.join(plugin_path, "styles.css"));
 			// add empty .hotreload file
 			fs.writeFileSync(path.join(plugin_path, ".hotreload"), "");
 			
+
 			console.log("Plugin built and copied to obsidian plugins folder");
 		});
 	}
@@ -63,7 +69,7 @@ const context = await esbuild.context({
 	logLevel: "info",
 	sourcemap: "inline",
 	treeShaking: true,
-	outfile: "main.js",
+	outfile: "dist/main.js",
 	plugins: [
 		copy_to_plugins
 	]
