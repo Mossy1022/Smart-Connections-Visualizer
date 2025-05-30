@@ -53,7 +53,7 @@ interface PluginSettings {
 
 declare global {
     interface Window {
-        SmartSearch: any;
+        smart_env: any;
     }
 }
 
@@ -328,7 +328,7 @@ class ScGraphItemView extends ItemView {
 
 	//@ts-ignore
 	get env() { return window.smart_env; }
-	get smartNotes() { return window.SmartSearch?.main?.env?.smart_sources?.items; }
+	get smartNotes() { return window.smart_env?.smart_sources?.items; }
 	
 
 	async onOpen() {

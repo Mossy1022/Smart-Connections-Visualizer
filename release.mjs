@@ -106,7 +106,7 @@ rl_interface.question(`Confirm release version (${version}): `, (confirmed_versi
         throw err;
       });
 
-      archive.on('end', async function() {
+      archive.on('finish', async function() {
         console.log('Archive wrote %d bytes', archive.pointer());
 
         // Upload zip file after archive has been finalized
