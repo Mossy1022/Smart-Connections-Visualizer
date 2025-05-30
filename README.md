@@ -10,6 +10,10 @@ Welcome to the Smart Connections Visualizer Plugin! This plugin integrates seaml
 
 ![App Demo](Intro.gif)
 
+## UPDATE
+
+This displays connections for a single note.  If you'd like to visualize clusters between multiple notes or all within your entire vault, check out [Smart Connections Vault Visualizer](https://github.com/Mossy1022/Smart-Connections-Vault-Visualizer)
+
 ## Features
 
 - **Dynamic Force-Directed Graph:** Visualize connections as a force-directed graph where nodes represent notes or specific excerpts from them and edges represent connections.  
