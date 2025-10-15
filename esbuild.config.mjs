@@ -19,6 +19,10 @@ const package_json = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'packag
 const manifest_json = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'manifest.json')));
 manifest_json.version = package_json.version;
 fs.writeFileSync(path.join(process.cwd(), 'manifest.json'), JSON.stringify(manifest_json, null, 2));
+// Ensure dist directory exists
+if (!fs.existsSync(path.join(process.cwd(), 'dist'))) {
+	fs.mkdirSync(path.join(process.cwd(), 'dist'));
+}
 fs.writeFileSync(path.join(process.cwd(), './dist/manifest.json'), JSON.stringify(manifest_json, null, 2));
 
 
@@ -26,25 +30,28 @@ const copy_to_plugins = {
 	name: 'copy_to_plugins',
 	setup(build) {
 		build.onEnd(() => {
-			const plugin_path = path.join(process.env.OBSIDIAN_PLUGINS_PATH, "smart-connections-visualizer");
-			
-			if (!fs.existsSync(plugin_path)) {
-				fs.mkdirSync(plugin_path);
-			}
 			// copy manifest and styles to dist folder
 			fs.copyFileSync("./manifest.json", "./dist/manifest.json");
 			fs.copyFileSync("./styles.css", "./dist/styles.css");
-			
 
+			// Only copy to plugins folder if OBSIDIAN_PLUGINS_PATH is set
+			if (process.env.OBSIDIAN_PLUGINS_PATH) {
+				const plugin_path = path.join(process.env.OBSIDIAN_PLUGINS_PATH, "smart-connections-visualizer");
 
-			fs.copyFileSync("./dist/main.js", path.join(plugin_path, "main.js"));
-			fs.copyFileSync("./dist/manifest.json", path.join(plugin_path, "manifest.json"));
-			fs.copyFileSync("./dist/styles.css", path.join(plugin_path, "styles.css"));
-			// add empty .hotreload file
-			fs.writeFileSync(path.join(plugin_path, ".hotreload"), "");
-			
+				if (!fs.existsSync(plugin_path)) {
+					fs.mkdirSync(plugin_path);
+				}
 
-			console.log("Plugin built and copied to obsidian plugins folder");
+				fs.copyFileSync("./dist/main.js", path.join(plugin_path, "main.js"));
+				fs.copyFileSync("./dist/manifest.json", path.join(plugin_path, "manifest.json"));
+				fs.copyFileSync("./dist/styles.css", path.join(plugin_path, "styles.css"));
+				// add empty .hotreload file
+				fs.writeFileSync(path.join(plugin_path, ".hotreload"), "");
+
+				console.log("Plugin built and copied to obsidian plugins folder");
+			} else {
+				console.log("Plugin built (OBSIDIAN_PLUGINS_PATH not set, skipping auto-copy)");
+			}
 		});
 	}
 };
