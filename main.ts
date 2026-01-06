@@ -61,11 +61,11 @@ class ScGraphItemView extends ItemView {
 
 	private plugin: ScGraphView;
 
-	currentNoteKey: string; 
+	currentNoteKey: string;
 	centralNote: any;
 	centralNode: any;
 	connectionType = 'block';
-    isHovering: boolean; 
+    isHovering: boolean;
 	relevanceScoreThreshold = 0.5;
 	nodeSize = 4;
 	linkThickness = 0.3;
@@ -108,7 +108,7 @@ class ScGraphItemView extends ItemView {
 	dragging = false;
 	highlightedNodeId = '-1';
 	currentNoteChanging = false;
-	isFiltering = false;	
+	isFiltering = false;
 	settingsMade = false;
 
     constructor(leaf: WorkspaceLeaf, plugin: ScGraphView) {
@@ -156,7 +156,7 @@ class ScGraphItemView extends ItemView {
 			.attr('stroke-width', (d: any) => d.selected ? 1.5 : (d.highlighted ? 0.3 : 0))
 			.attr('opacity', (d: any) => this.getNodeOpacity(d));
 	}
-	
+
 
 	// getNodeFill(d: any) {
 	// 	if (d.id === this.centralNode.id) return '#7c8594';
@@ -181,7 +181,7 @@ class ScGraphItemView extends ItemView {
 			this.updateNodeAppearance();
 		}
 	}
-	
+
 
 	clearSelections() {
 		this.nodeSelection.each((d: any) => {
@@ -192,7 +192,7 @@ class ScGraphItemView extends ItemView {
 	}
 
 	highlightNode(node: any) {
-		
+
         if (node.id === this.centralNode.id) {
             this.centerHighlighted = true;
         }
@@ -211,8 +211,8 @@ class ScGraphItemView extends ItemView {
         this.updateLabelAppearance(node);
         this.updateLinkLabelAppearance(node);
     }
-	
-	
+
+
 	updateHighlight(d: any, node: any) {
 		if (d.id !== this.centralNode.id) {
 			d.highlighted = (d.id === node.id || this.validatedLinks.some((link: any) =>
@@ -231,7 +231,7 @@ class ScGraphItemView extends ItemView {
 			.attr('opacity', (d: any) => this.getLabelOpacity(d, node))
 			.text((d: any) =>  d.id === this.highlightedNodeId ? this.formatLabel(d.name, false) : this.formatLabel(d.name, true));
 	}
-	
+
 	getLabelOpacity(d: any, node: any) {
 		if (!node) {
 			return 1; // Reset to full opacity if no node is highlighted
@@ -239,14 +239,14 @@ class ScGraphItemView extends ItemView {
 		return (d.id === node.id || this.validatedLinks.some((link: any) =>
 			(link.source.id === node.id && link.target.id === d.id)) || d.id == this.centralNode.id) ? 1 : 0.1;
 	}
-	
+
 	updateLinkLabelAppearance(node: any) {
 		this.linkLabelSelection.transition().duration(500)
 		.attr('opacity', (d: any) => {
 			return (d.source.id === node.id || d.target.id === node.id) ? 1 : 0;
 		})
 	}
-	
+
 
 	unhighlightNode(node : any) {
 
@@ -263,7 +263,7 @@ class ScGraphItemView extends ItemView {
         this.resetLinkLabelAppearance();
         this.updateLabelAppearance(null); // Pass false to reset label position
     }
-	
+
 
 	resetLinkAppearance() {
 		this.linkSelection.transition().duration(500).attr('opacity', 1);
@@ -292,18 +292,18 @@ class ScGraphItemView extends ItemView {
 			const parts = path.split('#');
 
 			let lastPart = parts[parts.length - 1]; // Take the last part after splitting by '#'
-    
+
 			// Check if the last part is empty or matches the pattern {number}
 			if (lastPart === '' || /^\{\d+\}$/.test(lastPart)) {
 				// Concatenate the last two parts
 				lastPart = parts[parts.length - 2] + '#' + lastPart;
-			}	
-			
+			}
+
 			//  // Check if lastPart contains any '/' and if so, take the last part after splitting by '/'
 			 if (lastPart.includes('/')) {
 				lastPart = lastPart.split('/').pop() || lastPart;
 			}
-			
+
 			label = lastPart;
 
 		} else if (path) {
@@ -311,15 +311,15 @@ class ScGraphItemView extends ItemView {
 		} else {
 			return '';
 		}
-	
+
 
 		label = label.replace(/[\[\]]/g, '') // Remove brackets if they exist
              .replace(/\.[^/#]+#(?=\{\d+\}$)/, '') // Remove hashtag if it exists
              .replace(/\.[^/.]+$/, ''); // Remove file extension if it exists
 
-	
+
 		return label;
-		
+
 	}
 
 	truncateLabel(label: string) {
@@ -329,7 +329,7 @@ class ScGraphItemView extends ItemView {
 	//@ts-ignore
 	get env() { return window.smart_env; }
 	get smartNotes() { return window.smart_env?.smart_sources?.items; }
-	
+
 
 	async onOpen() {
 		this.contentEl.createEl('h2', { text: 'Smart Visualizer' });
@@ -356,7 +356,7 @@ class ScGraphItemView extends ItemView {
 		}
 		this.setupSettingsMenu();
 		this.setupSVG();
-		this.addEventListeners();		
+		this.addEventListeners();
 		this.watchForNoteChanges();
 
 		// Load latest active file if opening view for first time
@@ -367,7 +367,7 @@ class ScGraphItemView extends ItemView {
 			this.render();
 			return
 		}
-				
+
 
 		this.updateVisualization();
 	}
@@ -375,7 +375,7 @@ class ScGraphItemView extends ItemView {
 	async waitForSmartNotes() {
 		const maxRetries = 10; // Set a max number of retries to avoid infinite loop
 		const delay = 2000; // Delay in milliseconds between retries
-	
+
 		for (let attempt = 0; attempt < maxRetries; attempt++) {
 			console.log(this.env);
 			if (this.env?.collections_loaded) {
@@ -383,7 +383,7 @@ class ScGraphItemView extends ItemView {
 			}
 			await new Promise(resolve => setTimeout(resolve, delay));
 		}
-	
+
 		// If we reach here, it means the entities are still not loaded
 		console.error('Smart notes did not load in time');
 		this.contentEl.createEl('p', { text: 'Failed to load Smart Connections.' });
@@ -397,7 +397,7 @@ class ScGraphItemView extends ItemView {
 	setupSVG() {
 		const width = this.contentEl.clientWidth;
 		const height = this.contentEl.clientHeight;
-	
+
 		const svg = d3.select(this.contentEl)
 			.append('svg')
 			.attr('width', '100%')
@@ -410,25 +410,25 @@ class ScGraphItemView extends ItemView {
 					svgGroup.attr('transform', event.transform);
 					this.updateLabelOpacity(event.transform.k);
 				}));
-				
+
 		const svgGroup = svg.append('g');
-	
+
 		svgGroup.append('g').attr('class', 'smart-connections-visualizer-links');
 		svgGroup.append('g').attr('class', 'smart-connections-visualizer-node-labels');
 		svgGroup.append('g').attr('class', 'smart-connections-visualizer-link-labels');
 		svgGroup.append('g').attr('class', 'smart-connections-visualizer-nodes');
-	
+
 		this.svgGroup = svgGroup;
 		this.svg = svg;
 	}
-	
+
 
 	getSVGDimensions() {
 		const width = this.contentEl.clientWidth || this.contentEl.getBoundingClientRect().width;
 		const height = this.contentEl.clientHeight || this.contentEl.getBoundingClientRect().height;
 		return { width, height };
 	}
-	
+
 
 	createSVG(width: number, height: number) {
 		return d3.select(this.contentEl)
@@ -483,14 +483,14 @@ class ScGraphItemView extends ItemView {
 		const counts = types.map(type => this.nodes.filter((node: any) => (node.group === type) && node.id !== this.centralNode.id).length);
 
 		// Initialize colors with default values
-    	let colors: { [key: string]: string } = { 'block': DEFAULT_NETWORK_SETTINGS.blockFillColor, 'note': DEFAULT_NETWORK_SETTINGS.noteFillColor }; 
+    	let colors: { [key: string]: string } = { 'block': DEFAULT_NETWORK_SETTINGS.blockFillColor, 'note': DEFAULT_NETWORK_SETTINGS.noteFillColor };
 
 		// Iterate over nodes to find the color for each type
 		for (let node of this.nodes) {
 			if (colors[node.group]) {
 				colors[node.group] = node.fill;
 			}
-		}	
+		}
 
 		// Use contentEl to create a table container
 		const tableContainer = this.contentEl.createEl('div', { cls: 'smart-connections-visualizer-legend-container' });
@@ -521,13 +521,13 @@ class ScGraphItemView extends ItemView {
 		types.forEach((type, index) => {
 			if (counts[index] > 0) { // Check if the count is greater than zero
 				const row = tableContainer.createEl('div', { cls: 'smart-connections-visualizer-legend-row' });
-				
+
 				row.createEl('div', { text: this.capitalizeFirstLetter(type), cls: 'smart-connections-visualizer-variable-col' });
 				row.createEl('div', { text: `${counts[index]}`, cls: 'smart-connections-visualizer-count-col' });
-				
+
 				const colorCell = row.createEl('div', { cls: 'smart-connections-visualizer-color-col' });
 				const colorPicker = colorCell.createEl('input', { type: 'color', value: colors[type as keyof typeof colors], cls: 'smart-connections-visualizer-legend-color-picker' });
-	
+
 				colorPicker.addEventListener('change', (e) => this.updateNodeColors(type, (e.target as HTMLInputElement).value));
 			}
 		});
@@ -544,13 +544,13 @@ class ScGraphItemView extends ItemView {
 		if (type === 'note' && color !== this.noteFillColor) {
 			this.noteFillColor = color;
 			this.plugin.settings.noteFillColor = color;
-			this.plugin.saveSettings(); // Save the settings		
+			this.plugin.saveSettings(); // Save the settings
 		}
 
 		if (type === 'block' && color !== this.blockFillColor) {
 			this.blockFillColor = color;
 			this.plugin.settings.noteFillColor = color;
-			this.plugin.saveSettings(); // Save the settings		
+			this.plugin.saveSettings(); // Save the settings
 		}
 
 
@@ -575,13 +575,13 @@ class ScGraphItemView extends ItemView {
 				.x((d: any) => d.x)
 				.y((d: any) => d.y)
 				.addAll(this.labelSelection.data());
-	
+
 			this.labelSelection.each((d: any) => {
 				const radius = d.radius + padding; // Assuming each label has a radius, adjust as necessary
 				const nx1 = d.x - radius, nx2 = d.x + radius, ny1 = d.y - radius, ny2 = d.y + radius;
-	
+
 				quadtree.visit((quad, x1, y1, x2, y2) => {
-					if ('data' in quad && quad.data && (quad.data !== d)) {						
+					if ('data' in quad && quad.data && (quad.data !== d)) {
 						let x = d.x - (quad.data as any).x,
 							y = d.y - (quad.data as any).y,
 							l = Math.sqrt(x * x + y * y),
@@ -680,98 +680,98 @@ class ScGraphItemView extends ItemView {
 
 	buildDropdownMenuContent(dropdownMenu: HTMLElement) {
 		const menuHeader = dropdownMenu.createEl('div', { cls: 'smart-connections-visualizer-menu-header' });
-		
+
 		// Append the refresh icon created by createRefreshIcon
 		const refreshIcon = this.createRefreshIcon();
 		refreshIcon.classList.add('smart-connections-visualizer-icon'); // Ensure it has the 'icon' class for styling
 		refreshIcon.setAttribute('id', 'smart-connections-visualizer-refresh-icon'); // Set the ID for specific styling or selection
-		menuHeader.appendChild(refreshIcon);	
-		
+		menuHeader.appendChild(refreshIcon);
+
 		// Append the new X icon created by createNewXIcon
 		const xIcon = this.createNewXIcon();
 		xIcon.classList.add('smart-connections-visualizer-icon'); // Ensure it has the 'icon' class for styling
 		xIcon.setAttribute('id', 'smart-connections-visualizer-close-icon'); // Set the ID for specific styling or selection
 		menuHeader.appendChild(xIcon);
-  
+
 		this.addAccordionItem(dropdownMenu, 'Filters', this.getFiltersContent.bind(this));
 		this.addAccordionItem(dropdownMenu, 'Display', this.getDisplayContent.bind(this));
 		this.addAccordionItem(dropdownMenu, 'Forces', this.getForcesContent.bind(this));
 	}
-	
-	
+
+
 	addAccordionItem(parent: HTMLElement, title: string, buildContent: (parent: HTMLElement) => void) {
 		const accordionItem = parent.createEl('div', { cls: 'smart-connections-visualizer-accordion-item' });
 		const header = accordionItem.createEl('div', { cls: 'smart-connections-visualizer-accordion-header' });
-	
+
 		const arrowIcon = header.createEl('span', { cls: 'smart-connections-visualizer-arrow-icon' });
 		arrowIcon.appendChild(this.createRightArrow());
-	
+
 		header.createEl('span', { text: title });
-	
+
 		const accordionContent = accordionItem.createEl('div', { cls: 'smart-connections-visualizer-accordion-content' });
 		buildContent(accordionContent);
 	}
-	
+
 	getFiltersContent(parent: HTMLElement) {
 		const sliderContainer1 = parent.createEl('div', { cls: 'smart-connections-visualizer-slider-container' });
-		sliderContainer1.createEl('label', { 
-			text: `Min relevance: ${(this.relevanceScoreThreshold * 100).toFixed(0)}%`, 
-			attr: { id: 'smart-connections-visualizer-scoreThresholdLabel', for: 'smart-connections-visualizer-scoreThreshold' } 
+		sliderContainer1.createEl('label', {
+			text: `Min relevance: ${(this.relevanceScoreThreshold * 100).toFixed(0)}%`,
+			attr: { id: 'smart-connections-visualizer-scoreThresholdLabel', for: 'smart-connections-visualizer-scoreThreshold' }
 		});
 
-		const relevanceSlider = sliderContainer1.createEl('input', { 
-			attr: { 
-				type: 'range', 
-				id: 'smart-connections-visualizer-scoreThreshold', 
-				class: 'smart-connections-visualizer-slider', 
-				name: 'scoreThreshold', 
-				min: '0', 
-				max: '0.99', 
-				step: '0.01' 
-			} 
+		const relevanceSlider = sliderContainer1.createEl('input', {
+			attr: {
+				type: 'range',
+				id: 'smart-connections-visualizer-scoreThreshold',
+				class: 'smart-connections-visualizer-slider',
+				name: 'scoreThreshold',
+				min: '0',
+				max: '0.99',
+				step: '0.01'
+			}
 		});
 
 		// Ensure the slider's value is set after it is appended to the DOM
 		relevanceSlider.value = this.relevanceScoreThreshold.toString();
-	
+
 		parent.createEl('label', { text: 'Connection type:', cls: 'smart-connections-visualizer-settings-item-content-label' });
-	
+
 		const radioContainer = parent.createEl('div', { cls: 'smart-connections-visualizer-radio-container' });
 
 		const radioBlockLabel = radioContainer.createEl('label');
-		const blockRadio = radioBlockLabel.createEl('input', { 
-			attr: { 
-				type: 'radio', 
-				name: 'connectionType', 
-				value: 'block' 
-			} 
+		const blockRadio = radioBlockLabel.createEl('input', {
+			attr: {
+				type: 'radio',
+				name: 'connectionType',
+				value: 'block'
+			}
 		});
 		blockRadio.checked = (this.connectionType === 'block'); // Set checked based on connectionType
 		radioBlockLabel.appendText(' Block');
-	
+
 		const radioNoteLabel = radioContainer.createEl('label');
-		const noteRadio = radioNoteLabel.createEl('input', { 
-			attr: { 
-				type: 'radio', 
-				name: 'connectionType', 
-				value: 'note' 
-			} 
+		const noteRadio = radioNoteLabel.createEl('input', {
+			attr: {
+				type: 'radio',
+				name: 'connectionType',
+				value: 'note'
+			}
 		});
 		noteRadio.checked = (this.connectionType === 'note'); // Set checked based on connectionType
 		radioNoteLabel.appendText(' Note');
 
 		const radioBothLabel = radioContainer.createEl('label');
-		const bothRadio = radioBothLabel.createEl('input', { 
-			attr: { 
-				type: 'radio', 
-				name: 'connectionType', 
-				value: 'both' 
-			} 
+		const bothRadio = radioBothLabel.createEl('input', {
+			attr: {
+				type: 'radio',
+				name: 'connectionType',
+				value: 'both'
+			}
 		});
 		bothRadio.checked = (this.connectionType === 'both'); // Set checked based on connectionType
 		radioBothLabel.appendText(' Both');
 	}
-	
+
 
 	getDisplayContent(parent: HTMLElement) {
 		const displaySettings = [
@@ -783,14 +783,14 @@ class ScGraphItemView extends ItemView {
 			{ id: 'smart-connections-visualizer-maxLinkThickness', label: 'Max link thickness', value: this.maxLinkThickness, min: 0.1, max: 10, step: 0.01 },
 			{ id: 'smart-connections-visualizer-fadeThreshold', label: 'Text fade threshold', value: this.textFadeThreshold, min: 0.1, max: 10, step: 0.01 }
 		];
-	
+
 		displaySettings.forEach(setting => {
 			const sliderContainer = parent.createEl('div', { cls: 'smart-connections-visualizer-slider-container' });
 			sliderContainer.createEl('label', { text: `${setting.label}: ${setting.value}`, attr: { id: `${setting.id}Label`, for: setting.id } });
 			sliderContainer.createEl('input', { attr: { type: 'range', id: setting.id, class: 'smart-connections-visualizer-slider', name: setting.id, min: `${setting.min}`, max: `${setting.max}`, value: `${setting.value}`, step: `${setting.step}` } });
 		});
 	}
-	
+
 
 	getForcesContent(parent: HTMLElement) {
 		const forcesSettings = [
@@ -798,25 +798,25 @@ class ScGraphItemView extends ItemView {
 			{ id: 'smart-connections-visualizer-linkForce', label: 'Link force', value: this.linkForce, min: 0, max: 1, step: 0.01 },
 			{ id: 'smart-connections-visualizer-linkDistance', label: 'Link distance', value: this.linkDistance, min: 10, max: 200, step: 1 }
 		];
-	
+
 		forcesSettings.forEach(setting => {
 			const sliderContainer = parent.createEl('div', { cls: 'smart-connections-visualizer-slider-container' });
 			sliderContainer.createEl('label', { text: `${setting.label}: ${setting.value}`, attr: { id: `${setting.id}Label`, for: setting.id } });
 			sliderContainer.createEl('input', { attr: { type: 'range', id: setting.id, class: 'smart-connections-visualizer-slider', name: setting.id, min: `${setting.min}`, max: `${setting.max}`, value: `${setting.value}`, step: `${setting.step}` } });
 		});
 	}
-	
+
 	toggleDropdownMenu() {
 		const dropdownMenu = document.querySelector('.sc-visualizer-dropdown-menu') as HTMLElement;
-	
+
 		if (dropdownMenu) {
 			dropdownMenu.classList.toggle('visible');
-	
+
 		} else {
 			console.error('Dropdown menu element not found');
 		}
 	}
-	
+
 
 	setupAccordionHeaders() {
 		const accordionHeaders = document.querySelectorAll('.smart-connections-visualizer-accordion-header');
@@ -832,31 +832,31 @@ class ScGraphItemView extends ItemView {
 			arrowIcon.appendChild(content.classList.contains('show') ? this.createDropdownArrow() : this.createRightArrow());
 		}
 	}
-	
+
 	createDropdownArrow() {
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.setAttribute("class", "smart-connections-visualizer-dropdown-indicator");
 		svg.setAttribute("viewBox", "0 0 16 16");
 		svg.setAttribute("fill", "currentColor");
-	
+
 		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		path.setAttribute("fill-rule", "evenodd");
 		path.setAttribute("d", "M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z");
-	
+
 		svg.appendChild(path);
 		return svg;
 	}
-	
+
 	createRightArrow() {
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.setAttribute("class", "smart-connections-visualizer-dropdown-indicator");
 		svg.setAttribute("viewBox", "0 0 16 16");
 		svg.setAttribute("fill", "currentColor");
-	
+
 		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		path.setAttribute("fill-rule", "evenodd");
 		path.setAttribute("d", "M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z");
-	
+
 		svg.appendChild(path);
 		return svg;
 	}
@@ -867,7 +867,7 @@ class ScGraphItemView extends ItemView {
 			cls: ['smart-connections-visualizer-settings-icon', ],
 			attr: { 'aria-label': 'Open graph settings' }
 		});
-	
+
 		// Create SVG element for settings icon
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.setAttribute("width", "24");
@@ -879,28 +879,28 @@ class ScGraphItemView extends ItemView {
 		svg.setAttribute("stroke-linecap", "round");
 		svg.setAttribute("stroke-linejoin", "round");
 		svg.setAttribute("class", "smart-connections-visualizer-svg-icon smart-connections-visualizer-lucide-settings");
-	
+
 		// Create path element for settings icon
 		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		path.setAttribute("d", "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z");
 		svg.appendChild(path);
-	
+
 		// Create circle element for settings icon
 		const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 		circle.setAttribute("cx", "12");
 		circle.setAttribute("cy", "12");
 		circle.setAttribute("r", "3");
 		svg.appendChild(circle);
-	
+
 		// Append SVG to settings icon container
 		settingsIcon.appendChild(svg);
-	
+
 		settingsIcon.addEventListener('click', this.toggleDropdownMenu);
 	}
 
 	createRefreshIcon() {
 		const refreshIcon = this.contentEl.createEl('div', { cls: 'smart-connections-visualizer-refresh-icon' });
-	
+
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.setAttribute("width", "24");
 		svg.setAttribute("height", "24");
@@ -911,23 +911,23 @@ class ScGraphItemView extends ItemView {
 		svg.setAttribute("stroke-linecap", "round");
 		svg.setAttribute("stroke-linejoin", "round");
 		svg.setAttribute("class", "smart-connections-visualizer-svg-icon smart-connections-visualizer-lucide-rotate-ccw");
-	
+
 		const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		path1.setAttribute("d", "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8");
 		svg.appendChild(path1);
-	
+
 		const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		path2.setAttribute("d", "M3 3v5h5");
 		svg.appendChild(path2);
-	
+
 		refreshIcon.appendChild(svg);
-	
+
 		return refreshIcon; // Return the complete icon element
 	}
 
 	createNewXIcon() {
 		const xIcon = this.contentEl.createEl('div', { cls: 'smart-connections-visualizer-x-icon' });
-	
+
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.setAttribute("width", "24");
 		svg.setAttribute("height", "24");
@@ -938,17 +938,17 @@ class ScGraphItemView extends ItemView {
 		svg.setAttribute("stroke-linecap", "round");
 		svg.setAttribute("stroke-linejoin", "round");
 		svg.setAttribute("class", "smart-connections-visualizer-svg-icon smart-connections-visualizer-lucide-x");
-	
+
 		const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		path1.setAttribute("d", "M18 6 6 18");
 		svg.appendChild(path1);
-	
+
 		const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		path2.setAttribute("d", "m6 6 12 12");
 		svg.appendChild(path2);
-	
+
 		xIcon.appendChild(svg);
-	
+
 		return xIcon; // Return the complete icon element
 	}
 
@@ -977,7 +977,7 @@ class ScGraphItemView extends ItemView {
 			scoreThresholdSlider.addEventListener('input', (event) => this.updateScoreThreshold(event));
 			const debouncedUpdate = debounce((event: Event) => {
 				this.updateVisualization(parseFloat((event.target as HTMLInputElement).value));
-			}, 500, true);			
+			}, 500, true);
 			scoreThresholdSlider.addEventListener('input', debouncedUpdate);
 		}
 	}
@@ -1266,7 +1266,7 @@ class ScGraphItemView extends ItemView {
 		this.updateLinkThickness();
 		this.updateSimulationForces();
 		this.updateVisualization(this.relevanceScoreThreshold);
-		
+
 	}
 
 	updateLabelsToDefaults() {
@@ -1283,7 +1283,7 @@ class ScGraphItemView extends ItemView {
 			'smart-connections-visualizer-linkForceLabel': `Link force: ${this.linkForce}`,
 			'smart-connections-visualizer-linkDistanceLabel': `Link distance: ${this.linkDistance}`
 		};
-	
+
 		for (const [id, text] of Object.entries(labels)) {
 			const label = document.getElementById(id);
 			if (label) {
@@ -1306,7 +1306,7 @@ class ScGraphItemView extends ItemView {
 		const maxLabelCharactersSlider = document.getElementById('smart-connections-visualizer-maxLabelCharacters') as HTMLInputElement;
 		const linkLabelSizeSlider = document.getElementById('smart-connections-visualizer-linkLabelSize') as HTMLInputElement;
 		const nodeLabelSizeSlider = document.getElementById('smart-connections-visualizer-nodeLabelSize') as HTMLInputElement;
-		
+
 		scoreThresholdSlider.value = `${this.relevanceScoreThreshold}`;
 		nodeSizeSlider.value = `${this.nodeSize}`;
 		// lineThicknessSlider.value = `${this.linkThickness}`;
@@ -1343,11 +1343,11 @@ class ScGraphItemView extends ItemView {
 		}
 
 		this.isChangingConnectionType = false;
-	
+
 		if (newScoreThreshold !== undefined) {
 			this.relevanceScoreThreshold = newScoreThreshold;
 		}
-	
+
 		await this.updateConnections();
 
 		const filteredConnections = this.connections.filter((connection: any) => connection.score >= this.relevanceScoreThreshold);
@@ -1382,7 +1382,7 @@ class ScGraphItemView extends ItemView {
 		});
 
 
-	
+
 		this.validatedLinks = filteredConnections.filter((link: any) => {
 			const sourceNode = nodesData.find((node: any) => node.id === link.source);
 			const targetNode = nodesData.find((node: any) => node.id === link.target);
@@ -1391,7 +1391,7 @@ class ScGraphItemView extends ItemView {
 			}
 			return sourceNode && targetNode;
 		});
-	
+
 		if (nodesData.length === 0 || this.validatedLinks.length === 0) {
 			this.updatingVisualization = false;
 			console.warn('No nodes or links to display after filtering. Aborting update.');
@@ -1404,17 +1404,17 @@ class ScGraphItemView extends ItemView {
 			 this.labelSelection = this.svgGroup.select('g.smart-connections-visualizer-node-labels').selectAll('text').data([]).exit().remove();
 			return;
 		}
-	
+
 		this.updateNodeAndLinkSelection(nodesData);
 
-		
+
 		if (!this.simulation || this.currentNoteChanging || this.isFiltering) {
 			const { width, height } = this.getSVGDimensions();
 			this.initializeSimulation(width, height);
 			this.currentNoteChanging = false;
 			this.isFiltering = false;
 		}
-	
+
 		this.simulation.nodes(nodesData).on('tick', this.simulationTickHandler.bind(this));
 		this.simulation.force('link').links(this.validatedLinks)
 		.distance((d: any) => this.linkDistanceScale(d.score)); // Ensure the link distance is applied
@@ -1425,7 +1425,7 @@ class ScGraphItemView extends ItemView {
 		setTimeout(() => {
 			this.simulation.alphaTarget(0);
 		}, 1000); // Adjust the delay as needed
-	
+
 		this.updatingVisualization = false;
 
 		// TODO: Comment back when pushing legend
@@ -1448,11 +1448,11 @@ class ScGraphItemView extends ItemView {
 		this.labelSelection
 			.attr('x', (d: any) => d.x)
 			.attr('y', (d: any) => d.y);
-	
+
 	}
-	
-	
-	
+
+
+
 	async updateConnections() {
 		this.nodes = [];
 		this.links = [];
@@ -1475,10 +1475,10 @@ class ScGraphItemView extends ItemView {
 		const isValid = this.validateGraphData(this.nodes, this.links);
 		if (!isValid) console.error('Graph data validation failed.');
 	}
-	
-	
+
+
 	addCentralNode() {
-		
+
 		if (this.centralNote.key && this.centralNote.key.trim() !== '' && !this.nodes.some((node: { id: any; }) => node.id === this.centralNote.key)) {
 
 			const svg = this.svg.node() as SVGSVGElement;
@@ -1501,7 +1501,7 @@ class ScGraphItemView extends ItemView {
 			console.error(`Central node not found or already exists: ${this.centralNote.key}`);
 		}
 	}
-	
+
 	addFilteredConnections(noteConnections: any) {
 
 		const filteredConnections = noteConnections.filter((connection: any) => {
@@ -1530,7 +1530,7 @@ class ScGraphItemView extends ItemView {
 			}
 		});
 		// console.log('Nodes after addFilteredConnections:', this.nodes);
-		// console.log('Links after addFilteredConnections:', this.links);	
+		// console.log('Links after addFilteredConnections:', this.links);
 	}
 
 	addConnectionNode(connectionId: any, connection: any) {
@@ -1552,21 +1552,21 @@ class ScGraphItemView extends ItemView {
 			console.log('Node already exists for connection ID:',connectionId);
 		}
 	}
-	
+
 	addConnectionLink(connectionId: string, connection: any) {
 		const sourceNode = this.nodes.find((node: { id: string; }) => node.id === this.centralNote.key);
 		const targetNode = this.nodes.find((node: { id: string; }) => node.id === connectionId);
-	
+
 		if (!sourceNode) {
 			console.error(`Source node not found: ${this.centralNote.key}`);
 			return;
 		}
-	
+
 		if (!targetNode) {
 			console.error(`Target node not found: ${connectionId}`);
 			return;
 		}
-	
+
 		this.links.push({
 			source: this.centralNote.key,
 			target: connectionId,
@@ -1579,7 +1579,7 @@ class ScGraphItemView extends ItemView {
 		});
 		this.updateScoreRange(connection.score);
 	}
-	
+
 
 	updateScoreRange(score: number) {
 		if (score > this.maxScore) this.maxScore = score;
@@ -1607,11 +1607,11 @@ class ScGraphItemView extends ItemView {
 		});
 		return isValid;
 	}
-	
+
 
 	updateNodeAndLinkSelection(nodesData: any) {
 		const svgGroup = this.svgGroup;
-	
+
 		 // Update links first
 		 this.linkSelection = svgGroup.select('g.smart-connections-visualizer-links').selectAll('line')
 		 .data(this.validatedLinks, (d: any) => `${d.source}-${d.target}`)
@@ -1620,8 +1620,8 @@ class ScGraphItemView extends ItemView {
 			 update => this.updateLink(update),
 			 exit => exit.remove()
 		 );
- 
-		
+
+
 		 this.linkLabelSelection = svgGroup.select('g.smart-connections-visualizer-link-labels').selectAll('text')
         .data(this.validatedLinks, (d: any) => `${d.source.id}-${d.target.id}`)
         .join(
@@ -1629,7 +1629,7 @@ class ScGraphItemView extends ItemView {
             update => this.updateLinkLabel(update),
             exit => exit.remove()
         );
-	
+
 		this.labelSelection = svgGroup.select('g.smart-connections-visualizer-node-labels').selectAll('text')
 			.data(nodesData, (d: any) => d.id)
 			.join(
@@ -1642,7 +1642,7 @@ class ScGraphItemView extends ItemView {
 
 		// Update nodes after links
 		this.nodeSelection = svgGroup.select('g.smart-connections-visualizer-nodes').selectAll('circle')
-			.data(nodesData, (d: any) => { 
+			.data(nodesData, (d: any) => {
 				 return d.id;
 				})
 			.join(
@@ -1650,9 +1650,9 @@ class ScGraphItemView extends ItemView {
 				update => this.updateNode(update),
 				exit => exit.remove()
 			);
-	
+
 	}
-	
+
 
 	enterNode(enter: any) {
 		const that = this;  // Reference to 'this' context for inner functions
@@ -1684,7 +1684,7 @@ class ScGraphItemView extends ItemView {
 		d.fx = d.x;
 		d.fy = d.y;
 	}
-	
+
 	onDrag(event: any, d: any) {
 
 		// Ensure hovering date isnt active when dragging.
@@ -1692,7 +1692,7 @@ class ScGraphItemView extends ItemView {
 
 		d.fx = event.x;
 		d.fy = event.y;
-	
+
 		// if (d.id === this.centralNode.id) {
 		//  // Update the position of the node's label immediately during dragging
 		//  this.labelSelection
@@ -1708,9 +1708,9 @@ class ScGraphItemView extends ItemView {
 		// }
 
 	}
-	
-	
-	
+
+
+
 	onDragEnd(event: any, d: any) {
 		if (!event.active) this.simulation.alphaTarget(0);
 		d.fx = null;
@@ -1719,7 +1719,7 @@ class ScGraphItemView extends ItemView {
 
 
 	}
-	
+
 	onNodeClick(event: any, d: any) {
 
 		// Don't need to touch central since we're in it
@@ -1736,13 +1736,13 @@ class ScGraphItemView extends ItemView {
 		// 	d.highlighted = false;
 		// }
 		// this.updateNodeAppearance();
-	}	
+	}
 
 	onNodeMouseOver(event: any, d: any) {
 
 		// Dont trigger possible highlights if user dragging around nodes quickly for fun
 		if(this.dragging) return;
-					
+
 		// Don't apply hover affect to center node
 		if(d.id === this.centralNode.id) return;
 
@@ -1758,7 +1758,7 @@ class ScGraphItemView extends ItemView {
 		// TODO:: Comment back when ready to implement Label Movement animation on hover
 		// console.log(`Hovering over node: ${d.id}, original y: ${d.y}`);
 		// this.svgGroup.select(`text[data-id='${d.id}']`).transition().duration(4000).attr('y', d.y + 8); // Animate label down 10 pixels
-	
+
 		this.app.workspace.trigger("hover-link", {
 			event,
 			source: 'D3',
@@ -1767,7 +1767,7 @@ class ScGraphItemView extends ItemView {
 			linktext: d.id,
 		});
 	}
-	
+
 	onNodeMouseOut(event: any, d: any) {
 		if (this.dragging) return;
 
@@ -1777,12 +1777,12 @@ class ScGraphItemView extends ItemView {
 
 		// Hide link labels associated with the node
 		this.updateLinkLabelAppearance({ id: null });
-	
+
 		// TODO:: Comment back when ready to implement Label MOvement animation on hover
 		// console.log(`Mouse out from node: ${d.id}, returning label to y: ${d.y}`);
 		// this.svgGroup.select(`text[data-id='${d.id}']`).transition().duration(400).attr('y', d.y); // Animate label back to original position
 	}
-	
+
 	updateLinkLabelPositions() {
 		this.linkLabelSelection
 			.attr('x', (d: any) => (d.source.x + d.target.x) / 2)
@@ -1844,7 +1844,7 @@ class ScGraphItemView extends ItemView {
 	}
 
 	updateLinkLabel(update: any) {
-		
+
 		return update.text((d: any) => (d.score * 100).toFixed(1))
 		.attr('x', (d: any) => d.x) // Initialize x position
 		.attr('y', (d: any) => d.y) // Initialize y position
@@ -1865,8 +1865,8 @@ class ScGraphItemView extends ItemView {
 			.attr('y', (d: any) => d.y) // Initialize y position
 			.text((d: any) => this.formatLabel(d.name));
 	}
-	
-	
+
+
 	updateLabel(update: any) {
 		return update.attr('dx', 0)
 			.attr('data-id', (d: any) => d.id)
@@ -1878,7 +1878,7 @@ class ScGraphItemView extends ItemView {
 			.attr('y', (d: any) => d.y) // Update y position with offset for highlight
 			.attr('opacity', 1);
 	}
-	
+
 
 	updateNodeSizes() {
 		this.nodeSelection.attr('r', (d: any) => d.id === this.centralNode.id ? this.nodeSize + 3 : this.nodeSize);
@@ -1902,11 +1902,11 @@ class ScGraphItemView extends ItemView {
 			.force('link', d3.forceLink(this.validatedLinks)
 				.id((d: any) => d.id)
 				.distance((d: any) => this.linkDistanceScale(d.score))
-				.strength(this.linkForce))		
+				.strength(this.linkForce))
 			// .force('collide', d3.forceCollide().radius(this.nodeSize + 3).strength(0.7));
 
     	this.simulation.alphaTarget(0.3).restart();
-		
+
 		// Stop the simulation after a short delay
 		setTimeout(() => {
 			this.simulation.alphaTarget(0);
@@ -1926,26 +1926,26 @@ class ScGraphItemView extends ItemView {
             .domain([0, 1])
             .range([this.linkDistance * 2, this.linkDistance / 2])(this.normalizeScore(score));
     }
-	
+
 
 	updateLabelOpacity(zoomLevel: number) {
 		const maxOpacity = 1;
 		const minOpacity = 0;
 		const minZoom = 0.1;
 		const maxZoom = this.textFadeThreshold; // Use the threshold value from the slider
-	
+
 		let newOpacity = (zoomLevel - minZoom) / (maxZoom - minZoom);
 		if (zoomLevel <= minZoom) newOpacity = minOpacity;
 		if (zoomLevel >= maxZoom) newOpacity = maxOpacity;
-	
+
 		newOpacity = Math.max(minOpacity, Math.min(maxOpacity, newOpacity));
-		
+
 		// Update node labels opacity based on zoom level
 		if(this.labelSelection) {
 			this.labelSelection.transition().duration(300).attr('opacity', newOpacity);
 		}
-	}	
-	
+	}
+
 
 	updateNodeLabels() {
 		this.labelSelection.attr('font-size', this.nodeLabelSize)
@@ -1968,13 +1968,13 @@ class ScGraphItemView extends ItemView {
 		const minOpacity = 0;
 		const minZoom = 0.1;
 		const maxZoom = this.textFadeThreshold; // Use the threshold value from the slider
-	
+
 		let newOpacity = (zoomLevel - minZoom) / (maxZoom - minZoom);
 		if (zoomLevel <= minZoom) newOpacity = minOpacity;
 		if (zoomLevel >= maxZoom) newOpacity = maxOpacity;
-	
+
 		newOpacity = Math.max(minOpacity, Math.min(maxOpacity, newOpacity));
-		
+
 		this.labelSelection.transition().duration(300).attr('opacity', newOpacity);
 	}
 
@@ -2034,7 +2034,7 @@ class ScGraphItemView extends ItemView {
 		this.selectionBox.remove();
 	}
 
-	
+
 
 	// TODO:: Add back in when ready for toolti
 	// showTooltip(event: any, d: any) {
@@ -2053,7 +2053,7 @@ class ScGraphItemView extends ItemView {
 
 }
 
-	
+
 export default class ScGraphView extends Plugin {
 
 	settings: PluginSettings;
@@ -2071,27 +2071,38 @@ export default class ScGraphView extends Plugin {
 			defaultMod: true
 		});
 
+		// Add command to open visualizer
+		this.addCommand({
+			id: 'open-smart-connections-visualizer',
+			name: 'Open Smart Connections Visualizer',
+			callback: () => {
+				this.openSmartConnectionsVisualizer();
+			}
+		});
+
         // This creates an icon in the left ribbon.
         this.addRibbonIcon('git-fork', 'Open smart connections visualizer', (evt: MouseEvent) => {
-           	// Check if the view is already open
-			const existingLeaf = this.app.workspace.getLeavesOfType("smart-connections-visualizer")[0];
-			if (existingLeaf) {
-				// If it exists, focus on it
-				this.app.workspace.setActiveLeaf(existingLeaf);
-			} else {
-				// Create a new leaf in the current workspace
-				let leaf = this.app.workspace.getRightLeaf(false);
-				// Set the new leaf's view to your custom view
-				// @ts-ignore
-				leaf.setViewState({
-					type: "smart-connections-visualizer",
-					active: true,
-				});
-			}
+			this.openSmartConnectionsVisualizer();
         })
-		
-
     }
+
+	openSmartConnectionsVisualizer() {
+		// Check if the view is already open
+		const existingLeaf = this.app.workspace.getLeavesOfType("smart-connections-visualizer")[0];
+		if (existingLeaf) {
+			// If it exists, focus on it
+			this.app.workspace.setActiveLeaf(existingLeaf);
+		} else {
+			// Create a new leaf in the current workspace
+			let leaf = this.app.workspace.getRightLeaf(false);
+			// Set the new leaf's view to your custom view
+			// @ts-ignore
+			leaf.setViewState({
+				type: "smart-connections-visualizer",
+				active: true,
+			});
+		}
+	}
 
 	async loadSettings() {
         this.settings = Object.assign({}, DEFAULT_NETWORK_SETTINGS, await this.loadData());
