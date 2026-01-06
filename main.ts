@@ -1372,7 +1372,7 @@ class ScGraphItemView extends ItemView {
 		}
 
 		 // Check and initialize node positions
-		 nodesData.forEach((node: any) => {
+		 nodesData.forEach((node: any, index: number) => {
 
 			if (!node.x || !node.y) {
 				console.warn(`Node with invalid position: ${node.id}`);
@@ -2059,48 +2059,75 @@ export default class ScGraphView extends Plugin {
 	settings: PluginSettings;
 
     async onload() {
+		try {
+			await this.loadSettings();
 
-		await this.loadSettings();
+			// Register the new view
+			this.registerView("smart-connections-visualizer", (leaf: WorkspaceLeaf) => new ScGraphItemView(leaf, this));
 
-		// Register the new view
-        this.registerView("smart-connections-visualizer", (leaf: WorkspaceLeaf) => new ScGraphItemView(leaf, this));
+			// Register hover link source
+			this.registerHoverLinkSource('smart-connections-visualizer', {
+				display: 'Smart connections visualizer hover link source',
+				defaultMod: true
+			});
 
-		// Register hover link source
-		this.registerHoverLinkSource('smart-connections-visualizer', {
-			display: 'Smart connections visualizer hover link source',
-			defaultMod: true
-		});
+			// Add command to open visualizer
+			this.addCommand({
+				id: 'open-smart-connections-visualizer',
+				name: 'Open Smart Connections Visualizer',
+				callback: async () => {
+					await this.openSmartConnectionsVisualizer();
+				}
+			});
 
-		// Add command to open visualizer
-		this.addCommand({
-			id: 'open-smart-connections-visualizer',
-			name: 'Open Smart Connections Visualizer',
-			callback: () => {
-				this.openSmartConnectionsVisualizer();
-			}
-		});
+			// This creates an icon in the left ribbon.
+			this.addRibbonIcon('git-fork', 'Open smart connections visualizer', async (evt: MouseEvent) => {
+				await this.openSmartConnectionsVisualizer();
+			});
 
-        // This creates an icon in the left ribbon.
-        this.addRibbonIcon('git-fork', 'Open smart connections visualizer', (evt: MouseEvent) => {
-			this.openSmartConnectionsVisualizer();
-        })
+			console.log("Smart Connections Visualizer plugin loaded successfully");
+		} catch (error) {
+			console.error("Error loading Smart Connections Visualizer plugin:", error);
+			new Notice("Failed to load Smart Connections Visualizer plugin. Check console for details.");
+		}
     }
 
-	openSmartConnectionsVisualizer() {
-		// Check if the view is already open
-		const existingLeaf = this.app.workspace.getLeavesOfType("smart-connections-visualizer")[0];
-		if (existingLeaf) {
-			// If it exists, focus on it
-			this.app.workspace.setActiveLeaf(existingLeaf);
-		} else {
-			// Create a new leaf in the current workspace
-			let leaf = this.app.workspace.getRightLeaf(false);
-			// Set the new leaf's view to your custom view
-			// @ts-ignore
-			leaf.setViewState({
-				type: "smart-connections-visualizer",
-				active: true,
-			});
+	async openSmartConnectionsVisualizer() {
+		try {
+
+			console.log('opening smart connections visualizer');
+			// Check if the view is already open
+			const existingLeaf = this.app.workspace.getLeavesOfType("smart-connections-visualizer")[0];
+			console.log('existingLeaf: ', existingLeaf);
+			if (existingLeaf) {
+				// If it exists, focus on it
+				console.log('1 opening smart connections visualizer');
+
+				this.app.workspace.setActiveLeaf(existingLeaf);
+				console.log('1.5 opening smart connections visualizer');
+
+			} else {
+				console.log('2 opening smart connections visualizer');
+
+				// Create a new leaf in the current workspace
+				let leaf = this.app.workspace.getRightLeaf(false);
+				if (!leaf) {
+					// If no right leaf exists, create a new leaf
+					leaf = this.app.workspace.getLeaf(true);
+				}
+				console.log('3 opening smart connections visualizer');
+
+				// Set the new leaf's view to your custom view
+				await leaf.setViewState({
+					type: "smart-connections-visualizer",
+					active: true,
+				});
+				console.log('4 opening smart connections visualizer');
+
+			}
+		} catch (error) {
+			console.error("Error opening Smart Connections Visualizer:", error);
+			new Notice("Failed to open Smart Connections Visualizer. Check console for details.");
 		}
 	}
 
